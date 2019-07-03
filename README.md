@@ -4,9 +4,9 @@
 
 Using this module, developers can build Azure IoT Edge solutions with Serial (RS232) Port (the module is currently not available in Windows environment, please use Linux host + Linux container to play with the module) connectivity. The Serial module is an Azure IoT Edge module, capable of reading data from serial port devices and publishing data to the Azure IoT Hub via the Edge framework. Developers can modify the module tailoring to any scenario.
 
-<insert image>
+TODO: insert image
 
-There are prebuilt Serial module container images ready at here <insert link to CR> for you to quickstart the experience of Azure IoT Edge on your target device or simulated device.
+There are prebuilt Serial module container images ready at here TODO: insert link to CR for you to quickstart the experience of Azure IoT Edge on your target device or simulated device.
 
 Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
 
@@ -14,7 +14,7 @@ Visit http://azure.com/iotdev to learn more about developing applications for Az
 
 Current version of the module is targeted for the Azure IoT Edge GA.
 
-Find more information about Azure IoT Edge at here<insert link to Edge docs>.
+Find more information about Azure IoT Edge at here TODO: insert link to Edge docs.
 
 ##Target Device Setup
 
@@ -33,7 +33,7 @@ Azure IoT Edge is designed to be used with a broad range of operating system pla
 - Windows 10 IoT Core
 - Linux
 
-<insert links>
+TODO: insert links
 
 ##Build Environment Setup
 
