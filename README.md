@@ -38,3 +38,46 @@ Basic requirement:
 - Docker CE
 - .NET Core 2.1 SDK
 
+## HowTo Build
+
+In this section, the Serial module we be built as an IoT Edge module.
+
+Open the project in Microsoft Visual Studio Code, and open VS Code command palette (ctrl-shift-p), type and run the command Edge: Build IoT Edge solution. Select the deployment.template.json file for your solution from the command palette.
+__*Note: Be sure to check configuration section to properly set each fields before deploying the module.*__
+
+In Azure IoT Hub Devices explorer, right-click an IoT Edge device ID, then select Create deployment for IoT Edge device. Open the config folder of your solution, then select the deployment.json file. Click Select Edge Deployment Manifest. Then you can see the deployment is successfully created with a deployment ID in VS Code integrated terminal. You can check your container status in the VS Code Docker explorer or by run the docker ps command in the terminal.
+
+## Configuration
+
+Before running the module, proper configuration is required. Here is a sample configuration for your reference.
+
+TODO: Insert code block with desired-properties
+
+Meaning of each field:
+
+TODO: Add fields of desired properties
+
+## Module Endpoints and Routing
+
+There are two endpoints defined in Modbus TCP module:
+
+    "modbusOutput": This is a output endpoint for telemetries. All read operations defined in configuration will be composed as telemetry messages output to this endpoint.
+    "input1": This is an input endpoint for write commands.
+
+Input/Output message format and Routing rules are introduced below.
+
+### Read from Serial
+
+#### Telemetry Message
+
+Message Properties:
+
+```javascript
+# "content-type": "application/edge-serial-json"
+```
+
+Latest Message Payload:
+
+```javascript
+
+```
