@@ -59,10 +59,10 @@ TODO: Add fields of desired properties
 
 ## Module Endpoints and Routing
 
-There are two endpoints defined in Modbus TCP module:
+There are two endpoints defined in Serial module:
 
-    "modbusOutput": This is a output endpoint for telemetries. All read operations defined in configuration will be composed as telemetry messages output to this endpoint.
-    "input1": This is an input endpoint for write commands.
+- "serialOutput": This is a output endpoint for telemetries. All read operations defined in configuration will be composed as telemetry messages output to this endpoint.
+- "serialInput": This is an input endpoint for write commands.
 
 Input/Output message format and Routing rules are introduced below.
 
@@ -77,6 +77,57 @@ Message Properties:
 ```
 
 Latest Message Payload:
+
+```javascript
+TODO: Add message code
+```
+
+#### Route to IoT Hub
+
+```javascript
+
+```
+
+#### Route to other (filter) modules
+
+```javascript
+
+```
+### Write to serial
+
+Serial module use input endpoint "serialInput" to receive commands. Currently it supports writing back to a single message to a serial port.
+__*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages doesn't work.*__
+
+#### Command Message
+The content of command must be the following message format.
+
+Message Properties:
+
+```javascript
+"command-type": "SerialWrite"
+```
+Message Payload:
+
+```javascript
+
+```
+
+#### Route from other (filter) modules
+
+The command should have a property "command-type" with value "ModbusWrite". Also, routing must be enabled by specifying rule like below.
+
+```javascript
+
+```
+
+## HowTo Run
+
+### Run as an IoT Edge module
+
+Please follow the link to deploy the module as an IoT Edge module.
+
+#### Configure Serial
+In the Container Create Option section, enter the following for device mapping.
 
 ```javascript
 
