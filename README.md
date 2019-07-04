@@ -1,3 +1,5 @@
+*This project has adopted the [Code of Conduct](.\CODE_OF_CONDUCT.md) from Open Source Guides (https://opensource.guide/) For more information contact ```jw```` + ```@jeeweetje.net``` with any additional questions or comments.*
+
 # Azure IoT Edge Serial Module
 **Azure IoT Edge Serial Port (RS232) Communication module for Linux & Windows**
 
