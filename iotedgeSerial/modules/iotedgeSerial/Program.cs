@@ -110,7 +110,7 @@ namespace iotedgeSerial
                         Console.WriteLine($"[INF] {DateTime.UtcNow} Message to be sent: {jsonMessage}");
 
                         var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
-                        pipeMessage.Properties.Add("content-type", "application/edge-serialport-json");
+                        pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
                         await client.SendEventAsync("serialOutput", pipeMessage);
 
