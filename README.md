@@ -51,7 +51,12 @@ In Azure IoT Hub Devices explorer, right-click an IoT Edge device ID, then selec
 
 Before running the module, proper configuration is required. Here is a sample configuration for your reference.
 
-TODO: Insert code block with desired-properties
+```javascript
+"properties.desired": {
+        "Device": "<device name>",
+        "SleepInterval": "<sleep interval in miliseconds>"
+      }
+```
 
 Meaning of each field:
 
@@ -131,7 +136,7 @@ The command should have a property "command-type" with value "SerialWrite". Also
 Please follow the link to deploy the module as an IoT Edge module.
 
 #### Configure Serial
-In the Container Create Option section, enter the following for device mapping.
+In the Container "createOptions" section, enter the following for device mapping.
 
 ```javascript
 {
