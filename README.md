@@ -61,8 +61,8 @@ Before running the module, proper configuration is required. Here is a sample co
 Meaning of each field:
 
 TODO: Add fields of desired properties
-- 
-- 
+- **Device**: Device name/id
+- **SleepInterval**: # of miliseconds the thread should sleep
 - 
 - 
 
