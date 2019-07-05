@@ -5,20 +5,20 @@
 
 Using this module, developers can build Azure IoT Edge solutions with Serial (RS232) Port (the module is currently not available in Windows environment, please use Linux host + Linux container to play with the module) connectivity. The Serial module is an Azure IoT Edge module, capable of reading data from serial port devices and publishing data to the Azure IoT Hub via the Edge framework. Developers can modify the module tailoring to any scenario.
 
-![](doc/architecture.png)
+![Azure IoT Edge Serial Module Architecture](doc/architecture.png)
 
-There are prebuilt Serial module container images ready at here TODO: insert link to CR for you to quickstart the experience of Azure IoT Edge on your target device or simulated device.
+There are prebuilt Serial module container images ready at [here]() for you to quickstart the experience of Azure IoT Edge on your target device or simulated device.
 
 Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
 
 ## Azure IoT Edge Compatibility
-Current version of the module is targeted for the Azure IoT Edge GA.
+Current version of the module is targeted for the [Azure IoT Edge GA](https://azure.microsoft.com/en-us/blog/azure-iot-edge-generally-available-for-enterprise-grade-scaled-deployments/).
 
-Find more information about Azure IoT Edge at here TODO: insert link to Edge docs.
+Find more information about Azure IoT Edge at [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-iot-edge-works).
 
 ## Target Device Setup
 ### Platform Compatibility
-Azure IoT Edge is designed to be used with a broad range of operating system platforms. Modbus module has been tested on the following platforms:
+Azure IoT Edge is designed to be used with a broad range of operating system platforms. Serial module has been tested on the following platforms:
 
 - ~~Windows 10 Enterprise (version 1709) x64~~
 - ~~Windows 10 IoT Core (version 1709) x64~~
@@ -26,18 +26,16 @@ Azure IoT Edge is designed to be used with a broad range of operating system pla
 - ~~Linux arm32v7~~
 
 ### Device Setup
-- Windows 10 Desktop
-- Windows 10 IoT Core
-- Linux
-
-TODO: insert links
+- [Windows 10 Desktop](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
+- [Windows 10 IoT Core](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-core)
+- [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux)
 
 ## Build Environment Setup
-Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in Azure IoT Edge document. Please follow this link to setup the build environment.
+Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in Azure IoT Edge document. Please follow [this link](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-csharp-module) to setup the build environment.
 
 Basic requirement:
 
-- Docker CE
+- Moby or Docker CE
 - .NET Core 2.1 SDK
 
 ## HowTo Build
@@ -58,6 +56,10 @@ TODO: Insert code block with desired-properties
 Meaning of each field:
 
 TODO: Add fields of desired properties
+- 
+- 
+- 
+- 
 
 ## Module Endpoints and Routing
 
@@ -116,7 +118,7 @@ Message Payload:
 
 #### Route from other (filter) modules
 
-The command should have a property "command-type" with value "ModbusWrite". Also, routing must be enabled by specifying rule like below.
+The command should have a property "command-type" with value "SerialWrite". Also, routing must be enabled by specifying rule like below.
 
 ```javascript
 
