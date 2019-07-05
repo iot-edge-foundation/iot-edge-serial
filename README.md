@@ -67,7 +67,6 @@ TODO: Add fields of desired properties
 - 
 
 ## Module Endpoints and Routing
-
 There are two endpoints defined in Serial module:
 
 - "serialOutput": This is a output endpoint for telemetries. All read operations defined in configuration will be composed as telemetry messages output to this endpoint.
@@ -78,7 +77,6 @@ Input/Output message format and Routing rules are introduced below.
 ### Read from Serial
 
 #### Telemetry Message
-
 Message Properties:
 
 ```javascript
@@ -92,18 +90,16 @@ TODO: Add message code
 ```
 
 #### Route to IoT Hub
-
 ```javascript
 
 ```
 
 #### Route to other (filter) modules
-
 ```javascript
 
 ```
-### Write to serial
 
+### Write to serial
 Serial module use input endpoint "serialInput" to receive commands. Currently it supports writing back to a single message to a serial port.
 __*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages doesn't work.*__
 
@@ -122,7 +118,6 @@ Message Payload:
 ```
 
 #### Route from other (filter) modules
-
 The command should have a property "command-type" with value "SerialWrite". Also, routing must be enabled by specifying rule like below.
 
 ```javascript
@@ -132,8 +127,7 @@ The command should have a property "command-type" with value "SerialWrite". Also
 ## HowTo Run
 
 ### Run as an IoT Edge module
-
-Please follow the link to deploy the module as an IoT Edge module.
+Please follow [the link](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-csharp-module) to deploy the module as an IoT Edge module.
 
 #### Configure Serial
 In the Container "createOptions" section, enter the following for device mapping.
