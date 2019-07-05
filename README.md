@@ -134,5 +134,15 @@ Please follow the link to deploy the module as an IoT Edge module.
 In the Container Create Option section, enter the following for device mapping.
 
 ```javascript
-
+{
+  "HostConfig": {
+    "Devices": [
+      {
+        "PathOnHost": "<device name on host machine>",
+        "PathInContainer": "<device name in container>",
+        "CgroupPermissions": "rwm"
+      }
+    ]
+  }
+}
 ```
