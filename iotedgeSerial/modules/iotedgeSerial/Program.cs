@@ -24,6 +24,9 @@ namespace iotedgeSerial
         private static StopBits _stopBits = StopBits.One;
         private static int _sleepInterval;
 
+        private static string _beginDelimiter = "";
+        private static string _endDelimiter = "";
+
         static void Main(string[] args)
         {
             Init().Wait();
@@ -147,7 +150,7 @@ namespace iotedgeSerial
             var str = System.Text.Encoding.Default.GetString(buf);
 
             //read until end delimiter is reached.
-            while (str != "\x0d")
+            while (str != _beginDelimiter)
             {
                 temp.Add(buf[0]);
 
@@ -157,7 +160,7 @@ namespace iotedgeSerial
             }
 
             //remove the begin delimiter
-            if (temp[0].Equals(0x02))
+            if (temp[0].ToString().Equals(_endDelimiter))
             {
                 temp.Remove(temp[0]);
             }
@@ -218,6 +221,133 @@ namespace iotedgeSerial
                     reportedProperties["Device"] = _device;
                 }
 
+                if (desiredProperties.Contains("BaudRate"))
+                {
+                    if (desiredProperties["BaudRate"] != null)
+                    {
+                        _baudRate = desiredProperties["BaudRate"];
+                    }
+                    else
+                    {
+                        _device = "No baudrate configured";
+                    }
+
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] baud rate changed to {_baudRate}");
+
+                    reportedProperties["BaudRate"] = _baudRate;
+                }
+
+                if (desiredProperties.Contains("Parity"))
+                {
+                    if (desiredProperties["Parity"] != null)
+                    {
+                        switch(desiredProperties["Parity"])
+                        {
+                            case "None":
+                                _parity = Parity.None;
+                                break;
+                            case "Even":
+                                _parity = Parity.Even;
+                                break;
+                            case "Odd":
+                                _parity = Parity.Odd;
+                                break;
+                            case "Mark":
+                                _parity = Parity.Mark;
+                                break;
+                            case "Space":
+                                _parity = Parity.Space;
+                                break;
+
+                        };
+                    }
+                    else
+                    {
+                        _parity = Parity.None;
+                    }
+
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Parity changed to {_parity.ToString()}");
+
+                    reportedProperties["Parity"] = _parity.ToString();
+                }
+
+                if (desiredProperties.Contains("DataBits"))
+                {
+                    if (desiredProperties["DataBits"] != null)
+                    {
+                        _dataBits = desiredProperties["DataBits"];
+                    }
+                    else
+                    {
+                        _dataBits = 0;
+                    }
+
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Data bits changed to {_dataBits}");
+
+                    reportedProperties["DataBits"] = _dataBits;
+                }
+
+                if (desiredProperties.Contains("StopBits"))
+                {
+                    if (desiredProperties["StopBits"] != null)
+                    {
+                        switch(desiredProperties["StopBits"])
+                        {
+                            case "None":
+                                _stopBits = StopBits.None;
+                                break;
+                            case "One":
+                                _stopBits = StopBits.One;
+                                break;
+                            case "OnePointFive":
+                                _stopBits = StopBits.OnePointFive;
+                                break;
+                            case "Two":
+                                _stopBits = StopBits.Two;
+                                break;
+                        };
+                    }
+                    else
+                    {
+                        _stopBits = StopBits.None;
+                    }
+
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Stop bits changed to {_stopBits.ToString()}");
+
+                    reportedProperties["StopBits"] = _stopBits.ToString();
+                }
+
+                if (desiredProperties.Contains("BeginDelimiter"))
+                {
+                    if (desiredProperties["BeginDelimiter"] != null)
+                    {
+                        _beginDelimiter = desiredProperties["BeginDelimiter"];
+                    }
+                    else
+                    {
+                        _beginDelimiter = "";
+                    }
+
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Begin delimiter changed to {_beginDelimiter}");
+
+                    reportedProperties["BeginDelimiter"] = _beginDelimiter;
+                }
+
+                if (desiredProperties.Contains("EndDelimiter"))
+                {
+                    if (desiredProperties["EndDelimiter"] != null)
+                    {
+                        _endDelimiter = desiredProperties["EndDelimiter"];
+                    }
+                    else
+                    {
+                        _endDelimiter = "";
+                    }
+
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] End delimiter changed to {_endDelimiter}");
+
+                    reportedProperties["BeginDelimiter"] = _endDelimiter;
+                }
 
                 if (reportedProperties.Count > 0)
                 {
