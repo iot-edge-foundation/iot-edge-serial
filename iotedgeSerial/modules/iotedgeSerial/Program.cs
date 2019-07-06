@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
 using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
-
 using System.IO.Ports;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -101,11 +100,11 @@ namespace iotedgeSerial
 
                         Console.WriteLine($"[INF] {DateTime.UtcNow} Data read from serial port: {str}");
 
-                        var serialMessage = new SerialPortMessage
+                        var serialMessage = new SerialMessage
                         {
-                            Value = str,
-                            PublishedUtcTimestamp = DateTime.UtcNow,
-                            Port = _device
+                            Data = str,
+                            TimestampUtc = DateTime.UtcNow,
+                            Device = _device
                         };
 
                         var jsonMessage = JsonConvert.SerializeObject(serialMessage);
