@@ -228,7 +228,7 @@ namespace iotedgeSerial
                     }
                     else
                     {
-                        _device = "No baudrate configured";
+                        _baudRate = 9600;
                     }
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] baud rate changed to {_baudRate}");
