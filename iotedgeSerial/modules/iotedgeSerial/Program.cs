@@ -16,7 +16,7 @@ namespace iotedgeSerial
     {
         private const int SleepInterval = 10;
         private static ISerialDevice _serialPort = null;
-        private static string _device = "/dev/ttyxxx";
+        private static string _device = "/dev/ttyS0";
         private static int _baudRate = 9600;
         private static Parity _parity = Parity.None;
         private static int _dataBits = 8;
@@ -66,8 +66,6 @@ namespace iotedgeSerial
             var twin = await ioTHubModuleClient.GetTwinAsync();
             await onDesiredPropertiesUpdate(twin.Properties.Desired, ioTHubModuleClient);
 
-            // Register callback to be called when a message is received by the module
-            //await ioTHubModuleClient.SetInputMessageHandlerAsync("input1", PipeMessage, ioTHubModuleClient);
             var thread = new Thread(() => ThreadBody(ioTHubModuleClient));
             thread.Start();
         }
@@ -130,6 +128,8 @@ namespace iotedgeSerial
             }
         }
 
+        
+
         private static void OpenSerial(string slaveConnection, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
             _serialPort = SerialDeviceFactory.CreateSerialDevice(slaveConnection, baudRate, parity, dataBits, stopBits);
@@ -137,7 +137,7 @@ namespace iotedgeSerial
 
             _serialPort.Open();
         }
-
+        
         private static byte[] ReadResponse()
         {
             var temp = new List<byte>();
@@ -149,7 +149,7 @@ namespace iotedgeSerial
             var str = System.Text.Encoding.Default.GetString(buf);
 
             //read until end delimiter is reached.
-            while (str != _beginDelimiter)
+            while (str != _endDelimiter)
             {
                 temp.Add(buf[0]);
 
@@ -159,7 +159,7 @@ namespace iotedgeSerial
             }
 
             //remove the begin delimiter
-            if (temp[0].ToString().Equals(_endDelimiter))
+            if (temp[0].ToString().Equals(_beginDelimiter))
             {
                 temp.Remove(temp[0]);
             }
@@ -188,11 +188,11 @@ namespace iotedgeSerial
 
                 var reportedProperties = new TwinCollection();
 
-                if (desiredProperties.Contains("SleepInterval"))
+                if (desiredProperties.Contains("sleepInterval"))
                 {
-                    if (desiredProperties["SleepInterval"] != null)
+                    if (desiredProperties["sleepInterval"] != null)
                     {
-                        _sleepInterval = desiredProperties["SleepInterval"];
+                        _sleepInterval = desiredProperties["sleepInterval"];
                     }
                     else
                     {
@@ -201,14 +201,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}]Interval changed to {_sleepInterval}");
 
-                    reportedProperties["SleepInterval"] = _sleepInterval;
+                    reportedProperties["sleepInterval"] = _sleepInterval;
                 }
 
-                if (desiredProperties.Contains("Device"))
+                if (desiredProperties.Contains("device"))
                 {
-                    if (desiredProperties["Device"] != null)
+                    if (desiredProperties["device"] != null)
                     {
-                        _device = desiredProperties["Device"];
+                        _device = desiredProperties["device"];
                     }
                     else
                     {
@@ -217,14 +217,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] Device changed to {_device}");
 
-                    reportedProperties["Device"] = _device;
+                    reportedProperties["device"] = _device;
                 }
 
-                if (desiredProperties.Contains("BaudRate"))
+                if (desiredProperties.Contains("baudRate"))
                 {
-                    if (desiredProperties["BaudRate"] != null)
+                    if (desiredProperties["baudRate"] != null)
                     {
-                        _baudRate = desiredProperties["BaudRate"];
+                        _baudRate = desiredProperties["baudRate"];
                     }
                     else
                     {
@@ -233,14 +233,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] baud rate changed to {_baudRate}");
 
-                    reportedProperties["BaudRate"] = _baudRate;
+                    reportedProperties["baudRate"] = _baudRate;
                 }
 
-                if (desiredProperties.Contains("Parity"))
+                if (desiredProperties.Contains("parity"))
                 {
-                    if (desiredProperties["Parity"] != null)
+                    if (desiredProperties["parity"] != null)
                     {
-                        switch(desiredProperties["Parity"])
+                        switch (desiredProperties["parity"])
                         {
                             case "None":
                                 _parity = Parity.None;
@@ -267,14 +267,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] Parity changed to {_parity.ToString()}");
 
-                    reportedProperties["Parity"] = _parity.ToString();
+                    reportedProperties["parity"] = _parity.ToString();
                 }
 
-                if (desiredProperties.Contains("DataBits"))
+                if (desiredProperties.Contains("dataBits"))
                 {
-                    if (desiredProperties["DataBits"] != null)
+                    if (desiredProperties["dataBits"] != null)
                     {
-                        _dataBits = desiredProperties["DataBits"];
+                        _dataBits = desiredProperties["dataBits"];
                     }
                     else
                     {
@@ -283,14 +283,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] Data bits changed to {_dataBits}");
 
-                    reportedProperties["DataBits"] = _dataBits;
+                    reportedProperties["dataBits"] = _dataBits;
                 }
 
-                if (desiredProperties.Contains("StopBits"))
+                if (desiredProperties.Contains("stopBits"))
                 {
-                    if (desiredProperties["StopBits"] != null)
+                    if (desiredProperties["stopBits"] != null)
                     {
-                        switch(desiredProperties["StopBits"])
+                        switch (desiredProperties["stopBits"])
                         {
                             case "None":
                                 _stopBits = StopBits.None;
@@ -313,14 +313,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] Stop bits changed to {_stopBits.ToString()}");
 
-                    reportedProperties["StopBits"] = _stopBits.ToString();
+                    reportedProperties["stopBits"] = _stopBits.ToString();
                 }
 
-                if (desiredProperties.Contains("BeginDelimiter"))
+                if (desiredProperties.Contains("beginDelimiter"))
                 {
-                    if (desiredProperties["BeginDelimiter"] != null)
+                    if (desiredProperties["beginDelimiter"] != null)
                     {
-                        _beginDelimiter = desiredProperties["BeginDelimiter"];
+                        _beginDelimiter = desiredProperties["beginDelimiter"];
                     }
                     else
                     {
@@ -329,14 +329,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] Begin delimiter changed to {_beginDelimiter}");
 
-                    reportedProperties["BeginDelimiter"] = _beginDelimiter;
+                    reportedProperties["beginDelimiter"] = _beginDelimiter;
                 }
 
-                if (desiredProperties.Contains("EndDelimiter"))
+                if (desiredProperties.Contains("endDelimiter"))
                 {
-                    if (desiredProperties["EndDelimiter"] != null)
+                    if (desiredProperties["endDelimiter"] != null)
                     {
-                        _endDelimiter = desiredProperties["EndDelimiter"];
+                        _endDelimiter = desiredProperties["endDelimiter"];
                     }
                     else
                     {
@@ -345,7 +345,7 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] End delimiter changed to {_endDelimiter}");
 
-                    reportedProperties["BeginDelimiter"] = _endDelimiter;
+                    reportedProperties["endDelimiter"] = _endDelimiter;
                 }
 
                 if (reportedProperties.Count > 0)
