@@ -64,7 +64,17 @@
             "restartPolicy": "always",
             "settings": {
               "image": "${MODULES.iotedgeSerial}",
-              "createOptions": {}
+              "createOptions": {
+                "HostConfig": {
+                  "Devices": [
+                    {
+                      "PathOnHost": "/dev/ttyS0",
+                      "PathInContainer": "/dev/ttyS0",
+                      "CgroupPermissions": "rwm"
+                    }
+                  ]
+                }
+              }
             }
           }
         }
@@ -78,6 +88,19 @@
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
+        },
+        "iotedgeSerial": {
+          "properties.desired": {
+            "schemaVersion": "1.0",
+            "device": "/dev/ttyS0",
+            "sleepInterval": 10,
+            "baudRate": 9600,
+            "parity": "None",
+            "dataBits": 8,
+            "stopBits": "One",
+            "beginDelimiter": "\r",
+            "endDelimiter": "\n"
+          }
         }
       }
     }
