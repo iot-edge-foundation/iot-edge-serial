@@ -2,15 +2,15 @@
     "$schema-version": "0.0.1",
     "description": "",
     "image": {
-        "repository": "jeeweetje.azurecr.io/iotedgeserial",
+        "repository": "jeeweetje/iot-edge-serial",
         "tag": {
             "version": "0.0.1",
             "platforms": {
-                "amd64": "./Dockerfile.amd64", 
-                "amd64.debug": "./Dockerfile.amd64.debug",
-                "arm32v7": "./Dockerfile.arm32v7",
-                "arm32v7.debug": "./Dockerfile.arm32v7.debug",
-                "windows-amd64": "./Dockerfile.windows-amd64"
+                "amd64": "./tag.amd64.dockerfile", 
+                "amd64.debug": "./tag.amd64.debug.dockerfile",
+                "arm32v7": "./tag.arm32v7.dockerfile",
+                "arm32v7.debug": "./tag.arm32v7.debug.dockerfile",
+                "windows-amd64": "./tag.windows-amd64.dockerfile"
             }
         },
         "buildOptions": [],
