@@ -6,11 +6,11 @@
         "tag": {
             "version": "0.0.1",
             "platforms": {
-                "amd64": "./tag.amd64.dockerfile", 
-                "amd64.debug": "./tag.amd64.debug.dockerfile",
-                "arm32v7": "./tag.arm32v7.dockerfile",
-                "arm32v7.debug": "./tag.arm32v7.debug.dockerfile",
-                "windows-amd64": "./tag.windows-amd64.dockerfile"
+                "amd64": "./docker/amd64.dockerfile", 
+                "amd64.debug": "./docker/amd64.debug.dockerfile",
+                "arm32v7": "./docker/arm32v7.dockerfile",
+                "arm32v7.debug": "./docker/arm32v7.debug.dockerfile",
+                "windows-amd64": "./docker/windows-amd64.dockerfile"
             }
         },
         "buildOptions": [],
