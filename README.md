@@ -77,7 +77,7 @@ Before running the module, proper configuration is required. Here is a sample co
 Meaning of each field:
 
 - **sleepInterval**: # of miliseconds the thread should sleep as integer
-- **device**: Device as /dev/tty... as string
+- **device**: Device like /dev/tty... as string. (*Note:* Has to resemble the 'PathInContainer' create option)
 - **baudRate**: # of bauds as integer
 - **parity**: Partity with possible values: None, One, as string
 - **dataBits**: # number of data bits as integer
@@ -164,7 +164,9 @@ In the Container "createOptions" section, enter the following for device mapping
   }
 }
 ```
-Replace ```<device name on host machine>``` with something like '/dev/ttyS0'.
+Replace ```<device name on host machine>``` with the actual serial device like '/dev/ttyS0'.
+
+The 'PathInContainer' create option has to resemble the desired property 'device'.
 
 #### Access for read/write on serial ports 
 
