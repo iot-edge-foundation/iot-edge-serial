@@ -1,5 +1,17 @@
 *This project has adopted the [Code of Conduct](CODE_OF_CONDUCT.md) from Contributor Covenant (https://www.contributor-covenant.org/) For more information contact ```jw + @ + jeeweetje.net``` with any additional questions or comments.*
 
+```
+   _                         ___      _____   ___     _              
+  /_\   ___ _  _  _ _  ___  |_ _| ___|_   _| | __| __| | __ _  ___  
+ / _ \ |_ /| || || '_|/ -_)  | | / _ \ | |   | _| / _` |/ _` |/ -_) 
+/_/ \_\/__| \_,_||_|  \___| |___|\___/ |_|   |___|\__,_|\__, |\___| 
+                                                        |___/ 
+    ___            _        _   __  __          _        _
+   / __| ___  _ _ (_) __ _ | | |  \/  | ___  __| | _  _ | | ___ 
+   \__ \/ -_)| '_|| |/ _` || | | |\/| |/ _ \/ _` || || || |/ -_)  
+   |___/\___||_|  |_|\__,_||_| |_|  |_|\___/\__,_| \_,_||_|\___| 
+```
+
 # Azure IoT Edge Serial Module
 **Azure IoT Edge Serial Port (RS232) Communication module for Linux & Windows**
 
@@ -51,17 +63,27 @@ Before running the module, proper configuration is required. Here is a sample co
 
 ```javascript
 "properties.desired": {
-        "Device": "<device name>",
-        "SleepInterval": "<sleep interval in miliseconds>"
+        "SleepInterval": 10,
+        "Device": "/dev/ttyS0",
+        "BaudRate" : 9600,
+        "Partity" : "None",
+        "DataBits" : 8,
+        "StopBits" : "One",
+        "Delimiter" : "\n",
+        "IgnoreEmptyLines" : true,
       }
 ```
 
 Meaning of each field:
 
-- **Device**: Device name/id
-- **SleepInterval**: # of miliseconds the thread should sleep
-- 
-- 
+- **SleepInterval**: # of miliseconds the thread should sleep as integer
+- **Device**: Device as /dev/tty... as string
+- **Baudrate**: # of bauds as integer
+- **Parity**: Partity with possible values: None, One, as string
+- **DataBits**: # number of data bits as integer
+- **StopBits**: Stop bits with possible values: as string
+- **Delimiter**: Delimiter to seperate data into messages as string
+- **IgnoreEmptyLines**: Ignore empty lines in data as boolean
 
 ## Module Endpoints and Routing
 There are two endpoints defined in Serial module:
@@ -140,3 +162,4 @@ In the Container "createOptions" section, enter the following for device mapping
   }
 }
 ```
+Replace ```<device name on host machine>``` 
