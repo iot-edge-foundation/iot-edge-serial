@@ -23,8 +23,8 @@ namespace iotedgeSerial
         private static StopBits _stopBits = StopBits.One;
         private static int _sleepInterval;
 
-        private static string _beginDelimiter = "";
-        private static string _endDelimiter = "";
+        private static string _delimiter = "";
+        private static bool _ignoreEmptyLines = true;
 
         static void Main(string[] args)
         {
@@ -149,7 +149,7 @@ namespace iotedgeSerial
             var str = System.Text.Encoding.Default.GetString(buf);
 
             //read until end delimiter is reached.
-            while (str != _endDelimiter)
+            while (str != _delimiter)
             {
                 temp.Add(buf[0]);
 
@@ -159,10 +159,10 @@ namespace iotedgeSerial
             }
 
             //remove the begin delimiter
-            if (temp[0].ToString().Equals(_beginDelimiter))
-            {
-                temp.Remove(temp[0]);
-            }
+            //if (temp[0].ToString().Equals(_beginDelimiter))
+            //{
+            //    temp.Remove(temp[0]);
+            //}
             //TODO: always return the values no matter they are malformed.
             return temp.ToArray();
         }
@@ -316,36 +316,36 @@ namespace iotedgeSerial
                     reportedProperties["stopBits"] = _stopBits.ToString();
                 }
 
-                if (desiredProperties.Contains("beginDelimiter"))
+                if (desiredProperties.Contains("Delimiter"))
                 {
-                    if (desiredProperties["beginDelimiter"] != null)
+                    if (desiredProperties["Delimiter"] != null)
                     {
-                        _beginDelimiter = desiredProperties["beginDelimiter"];
+                        _delimiter = desiredProperties["Delimiter"];
                     }
                     else
                     {
-                        _beginDelimiter = "";
+                        _delimiter = "";
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Begin delimiter changed to {_beginDelimiter}");
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Begin delimiter changed to {_delimiter}");
 
-                    reportedProperties["beginDelimiter"] = _beginDelimiter;
+                    reportedProperties["beginDelimiter"] = _delimiter;
                 }
 
-                if (desiredProperties.Contains("endDelimiter"))
+                if (desiredProperties.Contains("IgnoreEmptyLines"))
                 {
-                    if (desiredProperties["endDelimiter"] != null)
+                    if (desiredProperties["IgnoreEmptyLines"] != null)
                     {
-                        _endDelimiter = desiredProperties["endDelimiter"];
+                        _ignoreEmptyLines = desiredProperties["IgnoreEmptyLines"];
                     }
                     else
                     {
-                        _endDelimiter = "";
+                        _ignoreEmptyLines = true;
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] End delimiter changed to {_endDelimiter}");
+                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Ignore empty lines changed to {_ignoreEmptyLines}");
 
-                    reportedProperties["endDelimiter"] = _endDelimiter;
+                    reportedProperties["IgnoreEmptyLines"] = _ignoreEmptyLines;
                 }
 
                 if (reportedProperties.Count > 0)
