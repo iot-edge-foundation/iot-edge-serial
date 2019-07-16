@@ -142,11 +142,12 @@ The command should have a property "command-type" with value "SerialWrite". Also
 
 ```
 
-## HowTo Run
+## How to run
+
 ### Run as an IoT Edge module
 Please follow [the link](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-csharp-module) to deploy the module as an IoT Edge module.
 
-#### Configure Serial
+#### Configure create options
 In the Container "createOptions" section, enter the following for device mapping.
 
 ```javascript
@@ -162,4 +163,14 @@ In the Container "createOptions" section, enter the following for device mapping
   }
 }
 ```
-Replace ```<device name on host machine>``` 
+Replace ```<device name on host machine>``` with something like '/dev/ttyS0'.
+
+#### Access for read/write on serial ports 
+
+Elevated rights are needed for access to the serial port. If your serial port is named eg. '/dev/ttyS0' use:
+
+```
+# chmod 666 /dev/ttyS0
+```
+
+*Note:* This setting must survive a reboot of the host machine.
