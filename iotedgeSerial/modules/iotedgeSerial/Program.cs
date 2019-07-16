@@ -61,8 +61,15 @@ namespace iotedgeSerial
 
             // Open a connection to the Edge runtime
             ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+            
+            //TODO: when publishing to Azure IoT Edge Modules Marketplace
+            //ioTHubModuleClient.ProductInfo()
+            
             await ioTHubModuleClient.OpenAsync();
             Log.Information($"IoT Hub module client initialized.");
+
+            
+
 
             // Execute callback method for Twin desired properties updates
             var twin = await ioTHubModuleClient.GetTwinAsync();
@@ -84,7 +91,7 @@ namespace iotedgeSerial
             Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
             Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
 
-            if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty")
+            if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty" || _device.Substring(0,11) == "/dev/rfcomm")
             {
                 try
                 {
