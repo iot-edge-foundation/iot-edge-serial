@@ -68,7 +68,6 @@ namespace iotedgeSerial
             await ioTHubModuleClient.OpenAsync();
             Log.Information($"IoT Hub module client initialized.");
 
-            
 
 
             // Execute callback method for Twin desired properties updates
@@ -148,30 +147,49 @@ namespace iotedgeSerial
         
         private static byte[] ReadResponse()
         {
+            int bytesRead = 0;
+
+            int delimiterIndex = 0;
+
             var temp = new List<byte>();
 
             var buf = new byte[1];
 
+            
             var i = _serialPort.Read(buf, 0, 1);
 
             var str = System.Text.Encoding.Default.GetString(buf);
 
-            //read until end delimiter is reached.
-            while (str != _delimiter)
+            //read until end delimiter is reached. 12345\r\n
+            while (bytesRead < 1024)
             {
                 temp.Add(buf[0]);
 
+                if (str[0] != _delimiter[delimiterIndex])
+                {
+                    delimiterIndex = 0;    
+                }
+                else
+                {
+                    delimiterIndex++;
+                    if (delimiterIndex == _delimiter.Length)
+                    {
+                        temp.RemoveRange(temp.Count-_delimiter.Length, _delimiter.Length);
+                        break;
+                    }
+                }
+                
                 i = _serialPort.Read(buf, 0, 1);
 
                 str = System.Text.Encoding.Default.GetString(buf);
+                bytesRead++;
             }
-
-            //remove the begin delimiter
-            //if (temp[0].ToString().Equals(_beginDelimiter))
-            //{
-            //    temp.Remove(temp[0]);
-            //}
-            //TODO: always return the values no matter they are malformed.
+            
+            if (bytesRead == 1024)
+            {
+                Log.Warning("Delimiter not found in last 1024 bytes read.");
+                temp.Clear();
+            }
             return temp.ToArray();
         }
 
