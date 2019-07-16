@@ -316,11 +316,11 @@ namespace iotedgeSerial
                     reportedProperties["stopBits"] = _stopBits.ToString();
                 }
 
-                if (desiredProperties.Contains("Delimiter"))
+                if (desiredProperties.Contains("delimiter"))
                 {
-                    if (desiredProperties["Delimiter"] != null)
+                    if (desiredProperties["delimiter"] != null)
                     {
-                        _delimiter = desiredProperties["Delimiter"];
+                        _delimiter = desiredProperties["delimiter"];
                     }
                     else
                     {
@@ -329,14 +329,14 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] Begin delimiter changed to {_delimiter}");
 
-                    reportedProperties["beginDelimiter"] = _delimiter;
+                    reportedProperties["delimiter"] = _delimiter;
                 }
 
-                if (desiredProperties.Contains("IgnoreEmptyLines"))
+                if (desiredProperties.Contains("ignoreEmptyLines"))
                 {
-                    if (desiredProperties["IgnoreEmptyLines"] != null)
+                    if (desiredProperties["ignoreEmptyLines"] != null)
                     {
-                        _ignoreEmptyLines = desiredProperties["IgnoreEmptyLines"];
+                        _ignoreEmptyLines = desiredProperties["ignoreEmptyLines"];
                     }
                     else
                     {
@@ -345,7 +345,7 @@ namespace iotedgeSerial
 
                     Console.WriteLine($"[INF][{DateTime.UtcNow}] Ignore empty lines changed to {_ignoreEmptyLines}");
 
-                    reportedProperties["IgnoreEmptyLines"] = _ignoreEmptyLines;
+                    reportedProperties["ignoreEmptyLines"] = _ignoreEmptyLines;
                 }
 
                 if (reportedProperties.Count > 0)
