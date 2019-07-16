@@ -4,7 +4,7 @@
     "image": {
         "repository": "jeeweetje/iot-edge-serial",
         "tag": {
-            "version": "0.0.1",
+            "version": "0.0.3",
             "platforms": {
                 "amd64": "./docker/amd64.dockerfile", 
                 "amd64.debug": "./docker/amd64.debug.dockerfile",
