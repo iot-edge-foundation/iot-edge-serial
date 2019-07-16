@@ -9,6 +9,7 @@ using Microsoft.Azure.Devices.Shared;
 using System.IO.Ports;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace iotedgeSerial
 {
@@ -28,6 +29,7 @@ namespace iotedgeSerial
 
         static void Main(string[] args)
         {
+            InitLogging();
             Init().Wait();
 
             // Wait until the app unloads or is cancelled
@@ -60,7 +62,7 @@ namespace iotedgeSerial
             // Open a connection to the Edge runtime
             ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
             await ioTHubModuleClient.OpenAsync();
-            Console.WriteLine($"[INF][{DateTime.UtcNow}] IoT Hub module client initialized.");
+            Log.Information($"IoT Hub module client initialized.");
 
             // Execute callback method for Twin desired properties updates
             var twin = await ioTHubModuleClient.GetTwinAsync();
@@ -79,13 +81,14 @@ namespace iotedgeSerial
                 throw new InvalidOperationException($"[INF][{DateTime.UtcNow}] UserContext for sending message doesn't contain expected values");
             }
 
-            Console.WriteLine($"[INF] {DateTime.UtcNow} Initializing serial port");
+            Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
+            Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
 
             if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty")
             {
                 try
                 {
-                    Console.WriteLine($"[INF] {DateTime.UtcNow} Opening...'{_device}'");
+                    Log.Information($"Opening '{_device}'...");
 
                     OpenSerial(_device, _baudRate, _parity, _dataBits, _stopBits);
 
@@ -96,7 +99,7 @@ namespace iotedgeSerial
 
                         var str = System.Text.Encoding.Default.GetString(response);
 
-                        Console.WriteLine($"[INF] {DateTime.UtcNow} Data read from serial port: {str}");
+                        Log.Information($"Data read from {_device}: {str}");
 
                         var serialMessage = new SerialMessage
                         {
@@ -107,14 +110,12 @@ namespace iotedgeSerial
 
                         var jsonMessage = JsonConvert.SerializeObject(serialMessage);
 
-                        Console.WriteLine($"[INF] {DateTime.UtcNow} Message to be sent: {jsonMessage}");
+                        Log.Information($"Message out: {jsonMessage}");
 
                         var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
                         pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
                         await client.SendEventAsync("serialOutput", pipeMessage);
-
-                        Console.WriteLine($"[INF] {DateTime.UtcNow} Message sent.");
 
                         Thread.Sleep(_sleepInterval);
                     }
@@ -122,7 +123,7 @@ namespace iotedgeSerial
                 catch (Exception e)
                 {
                     //clean up interrupted serial connection
-                    Console.WriteLine($"[ERR] {DateTime.UtcNow} Exception: {e.ToString()}");
+                    Log.Error($"{DateTime.UtcNow} Exception: {e.ToString()}");
                     _serialPort = null;
                 }
             }
@@ -176,14 +177,13 @@ namespace iotedgeSerial
 
             try
             {
-                Console.WriteLine($"[INF][{DateTime.UtcNow}] Desired property change:");
-                Console.WriteLine($"[INF][{DateTime.UtcNow}] {JsonConvert.SerializeObject(desiredProperties)}");
+                Log.Information($"Desired property change: {JsonConvert.SerializeObject(desiredProperties)}");
 
                 var client = userContext as ModuleClient;
 
                 if (client == null)
                 {
-                    throw new InvalidOperationException($"[ERR][{DateTime.UtcNow}]UserContext doesn't contain expected ModuleClient");
+                    throw new InvalidOperationException("UserContext doesn't contain expected ModuleClient");
                 }
 
                 var reportedProperties = new TwinCollection();
@@ -199,7 +199,7 @@ namespace iotedgeSerial
                         _sleepInterval = SleepInterval;
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}]Interval changed to {_sleepInterval}");
+                    Log.Information($"Interval changed to: {_sleepInterval}");
 
                     reportedProperties["sleepInterval"] = _sleepInterval;
                 }
@@ -215,7 +215,7 @@ namespace iotedgeSerial
                         _device = "No device configured";
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Device changed to {_device}");
+                    Log.Information($"Device changed to: {_device}");
 
                     reportedProperties["device"] = _device;
                 }
@@ -231,7 +231,7 @@ namespace iotedgeSerial
                         _baudRate = 9600;
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] baud rate changed to {_baudRate}");
+                    Log.Information($"baud rate changed to {_baudRate}");
 
                     reportedProperties["baudRate"] = _baudRate;
                 }
@@ -265,7 +265,7 @@ namespace iotedgeSerial
                         _parity = Parity.None;
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Parity changed to {_parity.ToString()}");
+                    Log.Information($"Parity changed to: {_parity.ToString()}");
 
                     reportedProperties["parity"] = _parity.ToString();
                 }
@@ -281,7 +281,7 @@ namespace iotedgeSerial
                         _dataBits = 0;
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Data bits changed to {_dataBits}");
+                    Log.Information($"Data bits changed to: {_dataBits}");
 
                     reportedProperties["dataBits"] = _dataBits;
                 }
@@ -311,7 +311,7 @@ namespace iotedgeSerial
                         _stopBits = StopBits.None;
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Stop bits changed to {_stopBits.ToString()}");
+                    Log.Information($"Stop bits changed to: {_stopBits.ToString()}");
 
                     reportedProperties["stopBits"] = _stopBits.ToString();
                 }
@@ -327,7 +327,7 @@ namespace iotedgeSerial
                         _delimiter = "";
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Begin delimiter changed to {_delimiter}");
+                    Log.Information($"Delimiter changed to: {_delimiter}");
 
                     reportedProperties["delimiter"] = _delimiter;
                 }
@@ -343,7 +343,7 @@ namespace iotedgeSerial
                         _ignoreEmptyLines = true;
                     }
 
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Ignore empty lines changed to {_ignoreEmptyLines}");
+                    Log.Information($"Ignore empty lines changed to: {_ignoreEmptyLines}");
 
                     reportedProperties["ignoreEmptyLines"] = _ignoreEmptyLines;
                 }
@@ -357,18 +357,56 @@ namespace iotedgeSerial
             {
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine($"[INF][{DateTime.UtcNow}] Error when receiving desired property: {0}", exception);
+                    Log.Error($"Error when receiving desired property: {0}", exception);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine();
-                Console.WriteLine($"[INF][{DateTime.UtcNow}] Error when receiving desired property: {0}", ex.Message);
+                Log.Error($"Error when receiving desired property: {0}", ex.Message);
             }
 
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Initialize logging using Serilog
+        /// LogLevel can be controlled via RuntimeLogLevel env var
+        /// </summary>
+        private static void InitLogging()
+        {
+            LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
+
+            var logLevel = Environment.GetEnvironmentVariable("RuntimeLogLevel");
+            logLevel = !string.IsNullOrEmpty(logLevel) ? logLevel.ToLower() : "info";
+
+            // set the log level
+            switch (logLevel)
+            {
+                case "fatal":
+                    loggerConfiguration.MinimumLevel.Fatal();
+                    break;
+                case "error":
+                    loggerConfiguration.MinimumLevel.Error();
+                    break;
+                case "warn":
+                    loggerConfiguration.MinimumLevel.Warning();
+                    break;
+                case "info":
+                    loggerConfiguration.MinimumLevel.Information();
+                    break;
+                case "debug":
+                    loggerConfiguration.MinimumLevel.Debug();
+                    break;
+                case "verbose":
+                    loggerConfiguration.MinimumLevel.Verbose();
+                    break;
+            }
+
+            // set logging sinks
+            loggerConfiguration.WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] - {Message}{NewLine}{Exception}");
+            loggerConfiguration.Enrich.FromLogContext();
+            Log.Logger = loggerConfiguration.CreateLogger();
+            Log.Information($"Initializied logger with log level {logLevel}");
+        }
     }
 }
