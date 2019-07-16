@@ -63,27 +63,27 @@ Before running the module, proper configuration is required. Here is a sample co
 
 ```javascript
 "properties.desired": {
-        "SleepInterval": 10,
-        "Device": "/dev/ttyS0",
-        "BaudRate" : 9600,
-        "Partity" : "None",
-        "DataBits" : 8,
-        "StopBits" : "One",
-        "Delimiter" : "\n",
-        "IgnoreEmptyLines" : true,
+        "sleepInterval": 10,
+        "device": "/dev/ttyS0",
+        "baudRate" : 9600,
+        "partity" : "None",
+        "dataBits" : 8,
+        "stopBits" : "One",
+        "delimiter" : "\n",
+        "ignoreEmptyLines" : true,
       }
 ```
 
 Meaning of each field:
 
-- **SleepInterval**: # of miliseconds the thread should sleep as integer
-- **Device**: Device as /dev/tty... as string
-- **Baudrate**: # of bauds as integer
-- **Parity**: Partity with possible values: None, One, as string
-- **DataBits**: # number of data bits as integer
-- **StopBits**: Stop bits with possible values: as string
-- **Delimiter**: Delimiter to seperate data into messages as string
-- **IgnoreEmptyLines**: Ignore empty lines in data as boolean
+- **sleepInterval**: # of miliseconds the thread should sleep as integer
+- **device**: Device as /dev/tty... as string
+- **baudRate**: # of bauds as integer
+- **parity**: Partity with possible values: None, One, as string
+- **dataBits**: # number of data bits as integer
+- **stopBits**: Stop bits with possible values: as string
+- **delimiter**: Delimiter to seperate data into messages as string
+- **ignoreEmptyLines**: Ignore empty lines in data as boolean
 
 ## Module Endpoints and Routing
 There are two endpoints defined in Serial module:
@@ -94,6 +94,7 @@ There are two endpoints defined in Serial module:
 Input/Output message format and Routing rules are introduced below.
 
 ### Read from Serial
+
 #### Telemetry Message
 Message Properties:
 
