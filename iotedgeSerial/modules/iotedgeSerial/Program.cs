@@ -342,7 +342,7 @@ namespace iotedgeSerial
                     }
                     else
                     {
-                        _delimiter = "";
+                        _delimiter = string.Empty;
                     }
 
                     Log.Information($"Delimiter changed to: {_delimiter}");
