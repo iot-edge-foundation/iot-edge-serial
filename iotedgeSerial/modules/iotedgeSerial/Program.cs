@@ -23,8 +23,7 @@ namespace iotedgeSerial
         private static int _dataBits = 8;
         private static StopBits _stopBits = StopBits.One;
         private static int _sleepInterval;
-
-        private static string _delimiter = "";
+        private static string _delimiter = string.Empty;
         private static bool _ignoreEmptyLines = true;
 
         static void Main(string[] args)
@@ -55,7 +54,6 @@ namespace iotedgeSerial
         /// </summary>
         static async Task Init()
         {
-
             MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             ITransportSettings[] settings = { mqttSetting };
 
@@ -67,8 +65,6 @@ namespace iotedgeSerial
             
             await ioTHubModuleClient.OpenAsync();
             Log.Information($"IoT Hub module client initialized.");
-
-
 
             // Execute callback method for Twin desired properties updates
             var twin = await ioTHubModuleClient.GetTwinAsync();
@@ -126,10 +122,10 @@ namespace iotedgeSerial
                         Thread.Sleep(_sleepInterval);
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     //clean up interrupted serial connection
-                    Log.Error($"{DateTime.UtcNow} Exception: {e.ToString()}");
+                    Log.Error($"{DateTime.UtcNow} Exception: {ex.ToString()}");
                     _serialPort = null;
                 }
             }
@@ -140,8 +136,6 @@ namespace iotedgeSerial
         private static void OpenSerial(string slaveConnection, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
             _serialPort = SerialDeviceFactory.CreateSerialDevice(slaveConnection, baudRate, parity, dataBits, stopBits);
-
-
             _serialPort.Open();
         }
         
@@ -155,14 +149,18 @@ namespace iotedgeSerial
 
             var buf = new byte[1];
 
-            
-            var i = _serialPort.Read(buf, 0, 1);
-
-            var str = System.Text.Encoding.Default.GetString(buf);
-
-            //read until end delimiter is reached. 12345\r\n
+            //read until end delimiter is reached eg. \r\n in 12345\r\n67890
             while (bytesRead < 1024)
             {
+                var i = _serialPort.Read(buf, 0, 1);
+
+                if (i < 1)
+                {
+                    continue;
+                }
+
+                var str = System.Text.Encoding.Default.GetString(buf);
+
                 temp.Add(buf[0]);
 
                 if (str[0] != _delimiter[delimiterIndex])
@@ -179,9 +177,6 @@ namespace iotedgeSerial
                     }
                 }
                 
-                i = _serialPort.Read(buf, 0, 1);
-
-                str = System.Text.Encoding.Default.GetString(buf);
                 bytesRead++;
             }
             
@@ -190,6 +185,7 @@ namespace iotedgeSerial
                 Log.Warning("Delimiter not found in last 1024 bytes read.");
                 temp.Clear();
             }
+
             return temp.ToArray();
         }
 
@@ -282,7 +278,6 @@ namespace iotedgeSerial
                             case "Space":
                                 _parity = Parity.Space;
                                 break;
-
                         };
                     }
                     else
