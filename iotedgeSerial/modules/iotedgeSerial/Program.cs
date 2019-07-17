@@ -131,8 +131,6 @@ namespace iotedgeSerial
             }
         }
 
-        
-
         private static void OpenSerial(string slaveConnection, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
             _serialPort = SerialDeviceFactory.CreateSerialDevice(slaveConnection, baudRate, parity, dataBits, stopBits);
