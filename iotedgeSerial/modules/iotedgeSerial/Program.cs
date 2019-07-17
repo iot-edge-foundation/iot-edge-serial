@@ -99,6 +99,12 @@ namespace iotedgeSerial
                     {
                         var response = ReadResponse();
 
+                        if (_ignoreEmptyLines 
+                                && response.Length == 0)
+                        {
+                            continue;    
+                        }
+
                         var str = System.Text.Encoding.Default.GetString(response);
 
                         Log.Information($"Data read from {_device}: {str}");
