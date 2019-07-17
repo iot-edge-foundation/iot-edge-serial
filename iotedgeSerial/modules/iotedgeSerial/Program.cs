@@ -8,6 +8,7 @@ using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using System.IO.Ports;
 using System.Collections.Generic;
+using System.Linq;
 using Newtonsoft.Json;
 using Serilog;
 
@@ -18,6 +19,8 @@ namespace iotedgeSerial
         private const int SleepInterval = 10;
         private static ISerialDevice _serialPort = null;
         private static string _device = "/dev/ttyS0";
+
+        private static string _direction = "Read";
         private static int _baudRate = 9600;
         private static Parity _parity = Parity.None;
         private static int _dataBits = 8;
@@ -26,6 +29,8 @@ namespace iotedgeSerial
 
         private static string _delimiter = "";
         private static bool _ignoreEmptyLines = true;
+
+        private static ModuleClient _ioTHubModuleClient = null;
 
         static void Main(string[] args)
         {
@@ -60,22 +65,51 @@ namespace iotedgeSerial
             ITransportSettings[] settings = { mqttSetting };
 
             // Open a connection to the Edge runtime
-            ModuleClient ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-            
+            _ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
+
             //TODO: when publishing to Azure IoT Edge Modules Marketplace
             //ioTHubModuleClient.ProductInfo()
-            
-            await ioTHubModuleClient.OpenAsync();
+
+            await _ioTHubModuleClient.OpenAsync();
             Log.Information($"IoT Hub module client initialized.");
+            Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
+            Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
 
-
+            // Register callback to be called when a message is received by the module
+            await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
 
             // Execute callback method for Twin desired properties updates
-            var twin = await ioTHubModuleClient.GetTwinAsync();
-            await onDesiredPropertiesUpdate(twin.Properties.Desired, ioTHubModuleClient);
+            var twin = await _ioTHubModuleClient.GetTwinAsync();
+            await onDesiredPropertiesUpdate(twin.Properties.Desired, _ioTHubModuleClient);
 
-            var thread = new Thread(() => ThreadBody(ioTHubModuleClient));
-            thread.Start();
+            if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty" || _device.Substring(0, 11) == "/dev/rfcomm")
+            {
+                try
+                {
+                    switch (_direction)
+                    {
+                        case "Read":
+                            Log.Information($"Opening '{_device}' for reading...");
+                            break;
+                        case "Write":
+                            Log.Information($"Opening '{_device}' for writing...");
+                            break;
+                    }
+                    OpenSerial(_device, _baudRate, _parity, _dataBits, _stopBits);
+                }
+                catch (Exception e)
+                {
+                    //clean up interrupted serial connection
+                    Log.Error($"Exception: {e.ToString()}");
+                    _serialPort = null;
+                }
+            }
+
+            if (_direction == "Read")
+            {
+                var thread = new Thread(() => ThreadBody(_ioTHubModuleClient));
+                thread.Start();
+            }
         }
 
         private static async void ThreadBody(object userContext)
@@ -87,64 +121,71 @@ namespace iotedgeSerial
                 throw new InvalidOperationException($"[INF][{DateTime.UtcNow}] UserContext for sending message doesn't contain expected values");
             }
 
-            Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
-            Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
-
-            if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty" || _device.Substring(0,11) == "/dev/rfcomm")
+            //looping infinitely
+            while (true)
             {
-                try
+                var response = ReadResponse();
+
+                var str = System.Text.Encoding.Default.GetString(response);
+
+                Log.Information($"Data read from '{_device}': '{str}'");
+
+                var serialMessage = new SerialMessage
                 {
-                    Log.Information($"Opening '{_device}'...");
+                    Data = str,
+                    TimestampUtc = DateTime.UtcNow,
+                    Device = _device
+                };
 
-                    OpenSerial(_device, _baudRate, _parity, _dataBits, _stopBits);
+                var jsonMessage = JsonConvert.SerializeObject(serialMessage);
 
-                    //looping infinitely
-                    while (true)
-                    {
-                        var response = ReadResponse();
+                Log.Information($"Message out: '{jsonMessage}'");
 
-                        var str = System.Text.Encoding.Default.GetString(response);
+                var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
+                pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
-                        Log.Information($"Data read from {_device}: {str}");
+                await client.SendEventAsync("serialOutput", pipeMessage);
 
-                        var serialMessage = new SerialMessage
-                        {
-                            Data = str,
-                            TimestampUtc = DateTime.UtcNow,
-                            Device = _device
-                        };
-
-                        var jsonMessage = JsonConvert.SerializeObject(serialMessage);
-
-                        Log.Information($"Message out: {jsonMessage}");
-
-                        var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
-                        pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
-
-                        await client.SendEventAsync("serialOutput", pipeMessage);
-
-                        Thread.Sleep(_sleepInterval);
-                    }
-                }
-                catch (Exception e)
-                {
-                    //clean up interrupted serial connection
-                    Log.Error($"{DateTime.UtcNow} Exception: {e.ToString()}");
-                    _serialPort = null;
-                }
+                Thread.Sleep(_sleepInterval);
             }
+
         }
 
-        
+        static async Task<MessageResponse> WriteToSerial(Message message, object userContext)
+        {
+
+            var moduleClient = userContext as ModuleClient;
+            if (moduleClient == null)
+            {
+                throw new InvalidOperationException("UserContext doesn't contain expected values");
+            }
+
+            byte[] messageBytes = message.GetBytes();
+
+            var jsonMessage = System.Text.Encoding.UTF8.GetString(messageBytes);
+            var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(jsonMessage, typeof(SerialCommand));
+
+            byte[] valueBytes = Encoding.UTF8.GetBytes(serialCommand.Value);
+            byte[] delimiterBytes = Encoding.UTF8.GetBytes(_delimiter);
+            byte[] totalBytes = valueBytes.Concat(delimiterBytes).ToArray();
+            Log.Information($"Data written to '{_device}': '{Encoding.UTF8.GetString(totalBytes)}'");
+
+            if (totalBytes.Length > 0)
+            {
+                _serialPort.Write(totalBytes, 0, totalBytes.Length);
+
+            }
+
+            return MessageResponse.Completed;
+        }
 
         private static void OpenSerial(string slaveConnection, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
             _serialPort = SerialDeviceFactory.CreateSerialDevice(slaveConnection, baudRate, parity, dataBits, stopBits);
 
-
             _serialPort.Open();
         }
-        
+
         private static byte[] ReadResponse()
         {
             int bytesRead = 0;
@@ -155,36 +196,36 @@ namespace iotedgeSerial
 
             var buf = new byte[1];
 
-            
+
             var i = _serialPort.Read(buf, 0, 1);
 
             var str = System.Text.Encoding.Default.GetString(buf);
 
-            //read until end delimiter is reached. 12345\r\n
+            //read until end delimiter is reached.
             while (bytesRead < 1024)
             {
                 temp.Add(buf[0]);
 
                 if (str[0] != _delimiter[delimiterIndex])
                 {
-                    delimiterIndex = 0;    
+                    delimiterIndex = 0;
                 }
                 else
                 {
                     delimiterIndex++;
                     if (delimiterIndex == _delimiter.Length)
                     {
-                        temp.RemoveRange(temp.Count-_delimiter.Length, _delimiter.Length);
+                        temp.RemoveRange(temp.Count - _delimiter.Length, _delimiter.Length);
                         break;
                     }
                 }
-                
+
                 i = _serialPort.Read(buf, 0, 1);
 
                 str = System.Text.Encoding.Default.GetString(buf);
                 bytesRead++;
             }
-            
+
             if (bytesRead == 1024)
             {
                 Log.Warning("Delimiter not found in last 1024 bytes read.");
@@ -243,6 +284,22 @@ namespace iotedgeSerial
                     Log.Information($"Device changed to: {_device}");
 
                     reportedProperties["device"] = _device;
+                }
+
+                if (desiredProperties.Contains("direction"))
+                {
+                    if (desiredProperties["direction"] != null)
+                    {
+                        _direction = desiredProperties["direction"];
+                    }
+                    else
+                    {
+                        _direction = "Read";
+                    }
+
+                    Log.Information($"Direction changed to: {_direction}");
+
+                    reportedProperties["direction"] = _direction;
                 }
 
                 if (desiredProperties.Contains("baudRate"))
