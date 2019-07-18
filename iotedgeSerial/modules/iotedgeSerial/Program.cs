@@ -99,10 +99,10 @@ namespace iotedgeSerial
                     }
                     OpenSerial(_device, _baudRate, _parity, _dataBits, _stopBits);
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
                     //clean up interrupted serial connection
-                    Log.Error($"Exception: {e.ToString()}");
+                    Log.Error($"Exception: {ex.ToString()}");
                     _serialPort = null;
                 }
             }
@@ -127,6 +127,12 @@ namespace iotedgeSerial
             while (true)
             {
                 var response = ReadResponse();
+
+                if (_ignoreEmptyLines
+                                && response.Length == 0)
+                {
+                    continue;
+                }
 
                 var str = System.Text.Encoding.Default.GetString(response);
 
