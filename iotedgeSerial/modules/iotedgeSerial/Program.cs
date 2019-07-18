@@ -16,6 +16,7 @@ namespace iotedgeSerial
 {
     class Program
     {
+        private static Thread _thread = null;
         private static bool _changingDesiredProperties = true;
         private const int SleepInterval = 10;
         private static ISerialDevice _serialPort = null;
@@ -87,7 +88,19 @@ namespace iotedgeSerial
             // Attach a callback for updates to the module twin's desired properties.
             // TODO: USE SAME STRATEGY FOR STOP/START SERVICE (DURING RECEPTION OF NEW SETTINGS) AS ORIGINAL SERVICE 
             await _ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, _ioTHubModuleClient);
+        }
 
+        private static void DisposeSerialPort()
+        {
+            _serialPort.Close();
+            _serialPort.Dispose();
+            _serialPort = null;
+
+            Log.Information($"Serial port '{_device}' disposed");
+        }
+
+        private static void InitSerialPort()
+        {
             if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty" || _device.Substring(0, 11) == "/dev/rfcomm")
             {
                 try
@@ -107,14 +120,9 @@ namespace iotedgeSerial
                 {
                     //clean up interrupted serial connection
                     Log.Error($"Exception: {ex.ToString()}");
+                    _serialPort.Dispose();
                     _serialPort = null;
                 }
-            }
-
-            if (_direction == "Read")
-            {
-                var thread = new Thread(() => ThreadBody(_ioTHubModuleClient));
-                thread.Start();
             }
         }
 
@@ -167,6 +175,7 @@ namespace iotedgeSerial
         {
             if (_changingDesiredProperties)
             {
+                // Abandon all incomming commands as long as the desired properties are changing.
                 await Task.Delay(TimeSpan.FromSeconds(0));
                 return MessageResponse.Abandoned;
             }
@@ -256,6 +265,13 @@ namespace iotedgeSerial
         private static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
             _changingDesiredProperties = true;
+
+            if (_direction == "Read")
+            {
+                _thread.Abort();
+            }
+
+            DisposeSerialPort();
 
             if (desiredProperties.Count == 0)
             {
@@ -454,6 +470,18 @@ namespace iotedgeSerial
                 {
                     client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
                 }
+                
+                //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
+
+                InitSerialPort();
+
+                if (_direction == "Read")
+                {
+                    _thread = new Thread(() => ThreadBody(_ioTHubModuleClient));
+                    _thread.Start();
+                }
+
+                _changingDesiredProperties = false;
             }
             catch (AggregateException ex)
             {
@@ -467,8 +495,7 @@ namespace iotedgeSerial
                 Log.Error($"Error when receiving desired property: {0}", ex.Message);
             }
 
-            _changingDesiredProperties = false;
-
+            // Under all circumstances, always report 'Completed' to prevent unlimited retries on same message
             return Task.CompletedTask;
         }
 
