@@ -16,6 +16,7 @@ namespace iotedgeSerial
 {
     class Program
     {
+        private static bool _changingDesiredProperties = true;
         private const int SleepInterval = 10;
         private static ISerialDevice _serialPort = null;
         private static string _device = "/dev/ttyS0";
@@ -73,8 +74,11 @@ namespace iotedgeSerial
             Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
             Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
 
-            // Register callback to be called when a message is received by the module
-            await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
+            if (_direction == "Write")
+            {
+              // Register callback to be called when a message is received by the module
+              await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
+            }
 
             // Execute callback method for Twin desired properties updates
             var twin = await _ioTHubModuleClient.GetTwinAsync();
@@ -82,7 +86,7 @@ namespace iotedgeSerial
 
             // Attach a callback for updates to the module twin's desired properties.
             // TODO: USE SAME STRATEGY FOR STOP/START SERVICE (DURING RECEPTION OF NEW SETTINGS) AS ORIGINAL SERVICE 
-            // await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
+            await _ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, _ioTHubModuleClient);
 
             if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty" || _device.Substring(0, 11) == "/dev/rfcomm")
             {
@@ -161,6 +165,11 @@ namespace iotedgeSerial
 
         static async Task<MessageResponse> WriteToSerial(Message message, object userContext)
         {
+            if (_changingDesiredProperties)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(0));
+                return MessageResponse.Abandoned;
+            }
 
             var moduleClient = userContext as ModuleClient;
             if (moduleClient == null)
@@ -246,6 +255,8 @@ namespace iotedgeSerial
 
         private static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
+            _changingDesiredProperties = true;
+
             if (desiredProperties.Count == 0)
             {
                 return Task.CompletedTask;
@@ -455,6 +466,8 @@ namespace iotedgeSerial
             {
                 Log.Error($"Error when receiving desired property: {0}", ex.Message);
             }
+
+            _changingDesiredProperties = false;
 
             return Task.CompletedTask;
         }
