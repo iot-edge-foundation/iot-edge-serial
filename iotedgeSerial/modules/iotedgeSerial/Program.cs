@@ -77,8 +77,8 @@ namespace iotedgeSerial
 
             if (_direction == "Write")
             {
-              // Register callback to be called when a message is received by the module
-              await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
+                // Register callback to be called when a message is received by the module
+                await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
             }
 
             // Execute callback method for Twin desired properties updates
@@ -92,11 +92,14 @@ namespace iotedgeSerial
 
         private static void DisposeSerialPort()
         {
-            _serialPort.Close();
-            _serialPort.Dispose();
-            _serialPort = null;
+            if (_serialPort != null)
+            {
+                _serialPort.Close();
+                _serialPort.Dispose();
+                _serialPort = null;
 
-            Log.Information($"Serial port '{_device}' disposed");
+                Log.Information($"Serial port '{_device}' disposed");
+            }
         }
 
         private static void InitSerialPort()
@@ -472,7 +475,7 @@ namespace iotedgeSerial
                 {
                     client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
                 }
-                
+
                 //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
 
                 InitSerialPort();
