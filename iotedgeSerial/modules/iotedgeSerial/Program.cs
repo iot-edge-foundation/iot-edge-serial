@@ -272,7 +272,7 @@ namespace iotedgeSerial
         private static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
             //lock (_lock)
-            {
+            //{
                 _changingDesiredProperties = true;
 
                 if (_direction == "Read" && _thread != null)
