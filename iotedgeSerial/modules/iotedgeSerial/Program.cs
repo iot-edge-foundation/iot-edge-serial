@@ -134,6 +134,8 @@ namespace iotedgeSerial
 
         private static async void ThreadBody(object userContext)
         {
+            try
+            {
             var client = userContext as ModuleClient;
 
             if (client == null)
@@ -174,6 +176,11 @@ namespace iotedgeSerial
 
                 Thread.Sleep(_sleepInterval);
             }
+            }
+            catch(ThreadAbortException ex) 
+            {
+                Log.Information($"Abort {ex}");
+            } 
 
         }
 
@@ -281,11 +288,15 @@ namespace iotedgeSerial
                 if (_direction == "Read" && _thread != null)
                 {
                     _thread.Abort();
+                    _thread = null;
                     Log.Information("Current 'Read' task stopped");
                 }
+                Log.Debug("carry on with disposing serial port");
 
                 DisposeSerialPort();
 
+                Log.Debug("Carry on with setting desired properties");
+                
                 if (desiredProperties.Count == 0)
                 {
                     Log.Information("No desired properties found");
@@ -486,7 +497,7 @@ namespace iotedgeSerial
                     }
 
                     //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
-
+                    Log.Debug("Initializing serial port after setting properties");   
                     InitSerialPort();
 
                     if (_direction == "Read")
@@ -495,7 +506,7 @@ namespace iotedgeSerial
                         _thread.Start();
                         Log.Information("New 'Read' task started");
                     }
-
+                    Log.Debug("Done");
                     _changingDesiredProperties = false;
                 }
                 catch (AggregateException ex)
