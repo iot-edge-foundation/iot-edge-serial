@@ -267,7 +267,7 @@ namespace iotedgeSerial
         {
             _changingDesiredProperties = true;
 
-            if (_direction == "Read")
+            if (_direction == "Read" && _thread != null)
             {
                 _thread.Abort();
                 Log.Information("Current 'Read' task stopped");
