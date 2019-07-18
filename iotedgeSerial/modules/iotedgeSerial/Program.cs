@@ -16,6 +16,7 @@ namespace iotedgeSerial
 {
     class Program
     {
+        private static object _lock = new object();
         private static Thread _thread = null;
         private static bool _changingDesiredProperties = true;
         private const int SleepInterval = 10;
@@ -268,7 +269,7 @@ namespace iotedgeSerial
 
         private static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
-            lock (this)
+            lock (_lock)
             {
                 _changingDesiredProperties = true;
 
@@ -517,7 +518,7 @@ namespace iotedgeSerial
             LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
 
             var logLevel = Environment.GetEnvironmentVariable("RuntimeLogLevel");
-            logLevel = !string.IsNullOrEmpty(logLevel) ? logLevel.ToLower() : "info";
+            logLevel = !string.IsNullOrEmpty(logLevel) ? logLevel.ToLower() : "verbose";
 
             // set the log level
             switch (logLevel)
