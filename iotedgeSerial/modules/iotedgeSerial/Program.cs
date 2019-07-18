@@ -263,7 +263,7 @@ namespace iotedgeSerial
             if (bytesRead == 1024)
             {
                 Log.Warning($"Delimiter '{_delimiter}' not found in last 1024 bytes read.");
-                Log.Debug
+                //Log.Debug
                 temp.Clear();
             }
 
