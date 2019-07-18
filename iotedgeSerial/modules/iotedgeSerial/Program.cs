@@ -177,6 +177,7 @@ namespace iotedgeSerial
             {
                 // Abandon all incoming commands as long as the desired properties are changing.
                 await Task.Delay(TimeSpan.FromSeconds(0));
+                Log.Information("Discarding incoming message");
                 return MessageResponse.Abandoned;
             }
 
@@ -269,6 +270,7 @@ namespace iotedgeSerial
             if (_direction == "Read")
             {
                 _thread.Abort();
+                Log.Information("Current 'Read' task stopped");
             }
 
             DisposeSerialPort();
@@ -479,6 +481,7 @@ namespace iotedgeSerial
                 {
                     _thread = new Thread(() => ThreadBody(_ioTHubModuleClient));
                     _thread.Start();
+                    Log.Information("New 'Read' task started");
                 }
 
                 _changingDesiredProperties = false;
