@@ -175,7 +175,7 @@ namespace iotedgeSerial
         {
             if (_changingDesiredProperties)
             {
-                // Abandon all incomming commands as long as the desired properties are changing.
+                // Abandon all incoming commands as long as the desired properties are changing.
                 await Task.Delay(TimeSpan.FromSeconds(0));
                 return MessageResponse.Abandoned;
             }
