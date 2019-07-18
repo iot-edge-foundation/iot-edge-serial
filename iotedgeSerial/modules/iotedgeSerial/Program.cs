@@ -66,7 +66,7 @@ namespace iotedgeSerial
             _ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
 
             //TODO: when publishing to Azure IoT Edge Modules Marketplace
-            //ioTHubModuleClient.ProductInfo()
+            //ioTHubModuleClient.ProductInfo = "...";
 
             await _ioTHubModuleClient.OpenAsync();
             Log.Information($"IoT Hub module client initialized.");
@@ -79,6 +79,10 @@ namespace iotedgeSerial
             // Execute callback method for Twin desired properties updates
             var twin = await _ioTHubModuleClient.GetTwinAsync();
             await onDesiredPropertiesUpdate(twin.Properties.Desired, _ioTHubModuleClient);
+
+            // Attach a callback for updates to the module twin's desired properties.
+            // TODO: USE SAME STRATEGY FOR STOP/START SERVICE (DURING RECEPTION OF NEW SETTINGS) AS ORIGINAL SERVICE 
+            // await ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, null);
 
             if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty" || _device.Substring(0, 11) == "/dev/rfcomm")
             {

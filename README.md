@@ -85,6 +85,8 @@ Meaning of each field:
 - **delimiter**: Delimiter to seperate data into messages as string
 - **ignoreEmptyLines**: Ignore empty lines in data as boolean
 
+If the delimiter is not recognized in time in the input stream, the input will be ignored every 1024 bytes and  a warning message is logged. This exception is treated as an empty line.
+
 ## Module Endpoints and Routing
 There are two endpoints defined in Serial module:
 
@@ -120,7 +122,7 @@ TODO: Add message code
 
 ### Write to serial
 Serial module use input endpoint "serialInput" to receive commands. Currently it supports writing back to a single message to a serial port.
-__*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages doesn't work.*__
+__*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages do work yet.*__
 
 #### Command Message
 The content of command must be the following message format.
