@@ -76,12 +76,6 @@ namespace iotedgeSerial
             Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
             Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
 
-            if (_direction == "Write")
-            {
-                // Register callback to be called when a message is received by the module
-                await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
-            }
-
             // Execute callback method for Twin desired properties updates
             var twin = await _ioTHubModuleClient.GetTwinAsync();
             await onDesiredPropertiesUpdate(twin.Properties.Desired, _ioTHubModuleClient);
@@ -89,6 +83,13 @@ namespace iotedgeSerial
             // Attach a callback for updates to the module twin's desired properties.
             // TODO: USE SAME STRATEGY FOR STOP/START SERVICE (DURING RECEPTION OF NEW SETTINGS) AS ORIGINAL SERVICE 
             await _ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, _ioTHubModuleClient);
+
+            if (_direction == "Write")
+            {
+                // Register callback to be called when a message is received by the module
+                await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
+                Log.Information($"Call back method registered for incoming messages on input 'serialInput'");
+            }
         }
 
         private static void DisposeSerialPort()
@@ -101,6 +102,7 @@ namespace iotedgeSerial
 
                 Log.Information($"Serial port '{_device}' disposed");
             }
+            Log.Debug("Nothing to dispose");
         }
 
         private static void InitSerialPort()
@@ -199,12 +201,11 @@ namespace iotedgeSerial
             byte[] valueBytes = Encoding.UTF8.GetBytes(serialCommand.Value);
             byte[] delimiterBytes = Encoding.UTF8.GetBytes(_delimiter);
             byte[] totalBytes = valueBytes.Concat(delimiterBytes).ToArray();
-            Log.Information($"Data written to '{_device}': '{Encoding.UTF8.GetString(totalBytes)}'");
-
+            
             if (totalBytes.Length > 0)
             {
                 _serialPort.Write(totalBytes, 0, totalBytes.Length);
-
+                Log.Information($"Data written to '{_device}': '{Encoding.UTF8.GetString(totalBytes)}'");
             }
 
             return MessageResponse.Completed;
@@ -215,6 +216,7 @@ namespace iotedgeSerial
             _serialPort = SerialDeviceFactory.CreateSerialDevice(slaveConnection, baudRate, parity, dataBits, stopBits);
 
             _serialPort.Open();
+            Log.Information($"Serial port '{_device}' opened");
         }
 
         private static byte[] ReadResponse()
@@ -269,7 +271,7 @@ namespace iotedgeSerial
 
         private static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
-            lock (_lock)
+            //lock (_lock)
             {
                 _changingDesiredProperties = true;
 
@@ -485,7 +487,7 @@ namespace iotedgeSerial
 
                     if (_direction == "Read")
                     {
-                        _thread = new Thread(() => ThreadBody(client));
+                        _thread = new Thread(() => ThreadBody(_ioTHubModuleClient));
                         _thread.Start();
                         Log.Information("New 'Read' task started");
                     }
@@ -506,7 +508,7 @@ namespace iotedgeSerial
 
                 // Under all circumstances, always report 'Completed' to prevent unlimited retries on same message
                 return Task.CompletedTask;
-            }
+            //}
         }
 
         /// <summary>
