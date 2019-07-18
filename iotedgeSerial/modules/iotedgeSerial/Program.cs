@@ -268,241 +268,244 @@ namespace iotedgeSerial
 
         private static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
-            _changingDesiredProperties = true;
-
-            if (_direction == "Read" && _thread != null)
+            lock (this)
             {
-                _thread.Abort();
-                Log.Information("Current 'Read' task stopped");
-            }
+                _changingDesiredProperties = true;
 
-            DisposeSerialPort();
+                if (_direction == "Read" && _thread != null)
+                {
+                    _thread.Abort();
+                    Log.Information("Current 'Read' task stopped");
+                }
 
-            if (desiredProperties.Count == 0)
-            {
+                DisposeSerialPort();
+
+                if (desiredProperties.Count == 0)
+                {
+                    return Task.CompletedTask;
+                }
+
+                try
+                {
+                    Log.Information($"Desired property change: {JsonConvert.SerializeObject(desiredProperties)}");
+
+                    var client = userContext as ModuleClient;
+
+                    if (client == null)
+                    {
+                        throw new InvalidOperationException("UserContext doesn't contain expected ModuleClient");
+                    }
+
+                    var reportedProperties = new TwinCollection();
+
+                    if (desiredProperties.Contains("sleepInterval"))
+                    {
+                        if (desiredProperties["sleepInterval"] != null)
+                        {
+                            _sleepInterval = desiredProperties["sleepInterval"];
+                        }
+                        else
+                        {
+                            _sleepInterval = SleepInterval;
+                        }
+
+                        Log.Information($"Interval changed to: {_sleepInterval}");
+
+                        reportedProperties["sleepInterval"] = _sleepInterval;
+                    }
+
+                    if (desiredProperties.Contains("device"))
+                    {
+                        if (desiredProperties["device"] != null)
+                        {
+                            _device = desiredProperties["device"];
+                        }
+                        else
+                        {
+                            _device = "No device configured";
+                        }
+
+                        Log.Information($"Device changed to: {_device}");
+
+                        reportedProperties["device"] = _device;
+                    }
+
+                    if (desiredProperties.Contains("direction"))
+                    {
+                        if (desiredProperties["direction"] != null)
+                        {
+                            _direction = desiredProperties["direction"];
+                        }
+                        else
+                        {
+                            _direction = "Read";
+                        }
+
+                        Log.Information($"Direction changed to: {_direction}");
+
+                        reportedProperties["direction"] = _direction;
+                    }
+
+                    if (desiredProperties.Contains("baudRate"))
+                    {
+                        if (desiredProperties["baudRate"] != null)
+                        {
+                            _baudRate = desiredProperties["baudRate"];
+                        }
+                        else
+                        {
+                            _baudRate = 9600;
+                        }
+
+                        Log.Information($"baud rate changed to {_baudRate}");
+
+                        reportedProperties["baudRate"] = _baudRate;
+                    }
+
+                    if (desiredProperties.Contains("parity"))
+                    {
+                        if (desiredProperties["parity"] != null)
+                        {
+                            switch (desiredProperties["parity"])
+                            {
+                                case "None":
+                                    _parity = Parity.None;
+                                    break;
+                                case "Even":
+                                    _parity = Parity.Even;
+                                    break;
+                                case "Odd":
+                                    _parity = Parity.Odd;
+                                    break;
+                                case "Mark":
+                                    _parity = Parity.Mark;
+                                    break;
+                                case "Space":
+                                    _parity = Parity.Space;
+                                    break;
+                            };
+                        }
+                        else
+                        {
+                            _parity = Parity.None;
+                        }
+
+                        Log.Information($"Parity changed to: {_parity.ToString()}");
+
+                        reportedProperties["parity"] = _parity.ToString();
+                    }
+
+                    if (desiredProperties.Contains("dataBits"))
+                    {
+                        if (desiredProperties["dataBits"] != null)
+                        {
+                            _dataBits = desiredProperties["dataBits"];
+                        }
+                        else
+                        {
+                            _dataBits = 0;
+                        }
+
+                        Log.Information($"Data bits changed to: {_dataBits}");
+
+                        reportedProperties["dataBits"] = _dataBits;
+                    }
+
+                    if (desiredProperties.Contains("stopBits"))
+                    {
+                        if (desiredProperties["stopBits"] != null)
+                        {
+                            switch (desiredProperties["stopBits"])
+                            {
+                                case "None":
+                                    _stopBits = StopBits.None;
+                                    break;
+                                case "One":
+                                    _stopBits = StopBits.One;
+                                    break;
+                                case "OnePointFive":
+                                    _stopBits = StopBits.OnePointFive;
+                                    break;
+                                case "Two":
+                                    _stopBits = StopBits.Two;
+                                    break;
+                            };
+                        }
+                        else
+                        {
+                            _stopBits = StopBits.None;
+                        }
+
+                        Log.Information($"Stop bits changed to: {_stopBits.ToString()}");
+
+                        reportedProperties["stopBits"] = _stopBits.ToString();
+                    }
+
+                    if (desiredProperties.Contains("delimiter"))
+                    {
+                        if (desiredProperties["delimiter"] != null)
+                        {
+                            _delimiter = desiredProperties["delimiter"];
+                        }
+                        else
+                        {
+                            _delimiter = string.Empty;
+                        }
+
+                        Log.Information($"Delimiter changed to: {_delimiter}");
+
+                        reportedProperties["delimiter"] = _delimiter;
+                    }
+
+                    if (desiredProperties.Contains("ignoreEmptyLines"))
+                    {
+                        if (desiredProperties["ignoreEmptyLines"] != null)
+                        {
+                            _ignoreEmptyLines = desiredProperties["ignoreEmptyLines"];
+                        }
+                        else
+                        {
+                            _ignoreEmptyLines = true;
+                        }
+
+                        Log.Information($"Ignore empty lines changed to: {_ignoreEmptyLines}");
+
+                        reportedProperties["ignoreEmptyLines"] = _ignoreEmptyLines;
+                    }
+
+                    if (reportedProperties.Count > 0)
+                    {
+                        client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
+                    }
+
+                    //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
+
+                    InitSerialPort();
+
+                    if (_direction == "Read")
+                    {
+                        _thread = new Thread(() => ThreadBody(client));
+                        _thread.Start();
+                        Log.Information("New 'Read' task started");
+                    }
+
+                    _changingDesiredProperties = false;
+                }
+                catch (AggregateException ex)
+                {
+                    foreach (Exception exception in ex.InnerExceptions)
+                    {
+                        Log.Error($"Error when receiving desired property: {0}", exception);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Error when receiving desired property: {0}", ex.Message);
+                }
+
+                // Under all circumstances, always report 'Completed' to prevent unlimited retries on same message
                 return Task.CompletedTask;
             }
-
-            try
-            {
-                Log.Information($"Desired property change: {JsonConvert.SerializeObject(desiredProperties)}");
-
-                var client = userContext as ModuleClient;
-
-                if (client == null)
-                {
-                    throw new InvalidOperationException("UserContext doesn't contain expected ModuleClient");
-                }
-
-                var reportedProperties = new TwinCollection();
-
-                if (desiredProperties.Contains("sleepInterval"))
-                {
-                    if (desiredProperties["sleepInterval"] != null)
-                    {
-                        _sleepInterval = desiredProperties["sleepInterval"];
-                    }
-                    else
-                    {
-                        _sleepInterval = SleepInterval;
-                    }
-
-                    Log.Information($"Interval changed to: {_sleepInterval}");
-
-                    reportedProperties["sleepInterval"] = _sleepInterval;
-                }
-
-                if (desiredProperties.Contains("device"))
-                {
-                    if (desiredProperties["device"] != null)
-                    {
-                        _device = desiredProperties["device"];
-                    }
-                    else
-                    {
-                        _device = "No device configured";
-                    }
-
-                    Log.Information($"Device changed to: {_device}");
-
-                    reportedProperties["device"] = _device;
-                }
-
-                if (desiredProperties.Contains("direction"))
-                {
-                    if (desiredProperties["direction"] != null)
-                    {
-                        _direction = desiredProperties["direction"];
-                    }
-                    else
-                    {
-                        _direction = "Read";
-                    }
-
-                    Log.Information($"Direction changed to: {_direction}");
-
-                    reportedProperties["direction"] = _direction;
-                }
-
-                if (desiredProperties.Contains("baudRate"))
-                {
-                    if (desiredProperties["baudRate"] != null)
-                    {
-                        _baudRate = desiredProperties["baudRate"];
-                    }
-                    else
-                    {
-                        _baudRate = 9600;
-                    }
-
-                    Log.Information($"baud rate changed to {_baudRate}");
-
-                    reportedProperties["baudRate"] = _baudRate;
-                }
-
-                if (desiredProperties.Contains("parity"))
-                {
-                    if (desiredProperties["parity"] != null)
-                    {
-                        switch (desiredProperties["parity"])
-                        {
-                            case "None":
-                                _parity = Parity.None;
-                                break;
-                            case "Even":
-                                _parity = Parity.Even;
-                                break;
-                            case "Odd":
-                                _parity = Parity.Odd;
-                                break;
-                            case "Mark":
-                                _parity = Parity.Mark;
-                                break;
-                            case "Space":
-                                _parity = Parity.Space;
-                                break;
-                        };
-                    }
-                    else
-                    {
-                        _parity = Parity.None;
-                    }
-
-                    Log.Information($"Parity changed to: {_parity.ToString()}");
-
-                    reportedProperties["parity"] = _parity.ToString();
-                }
-
-                if (desiredProperties.Contains("dataBits"))
-                {
-                    if (desiredProperties["dataBits"] != null)
-                    {
-                        _dataBits = desiredProperties["dataBits"];
-                    }
-                    else
-                    {
-                        _dataBits = 0;
-                    }
-
-                    Log.Information($"Data bits changed to: {_dataBits}");
-
-                    reportedProperties["dataBits"] = _dataBits;
-                }
-
-                if (desiredProperties.Contains("stopBits"))
-                {
-                    if (desiredProperties["stopBits"] != null)
-                    {
-                        switch (desiredProperties["stopBits"])
-                        {
-                            case "None":
-                                _stopBits = StopBits.None;
-                                break;
-                            case "One":
-                                _stopBits = StopBits.One;
-                                break;
-                            case "OnePointFive":
-                                _stopBits = StopBits.OnePointFive;
-                                break;
-                            case "Two":
-                                _stopBits = StopBits.Two;
-                                break;
-                        };
-                    }
-                    else
-                    {
-                        _stopBits = StopBits.None;
-                    }
-
-                    Log.Information($"Stop bits changed to: {_stopBits.ToString()}");
-
-                    reportedProperties["stopBits"] = _stopBits.ToString();
-                }
-
-                if (desiredProperties.Contains("delimiter"))
-                {
-                    if (desiredProperties["delimiter"] != null)
-                    {
-                        _delimiter = desiredProperties["delimiter"];
-                    }
-                    else
-                    {
-                        _delimiter = string.Empty;
-                    }
-
-                    Log.Information($"Delimiter changed to: {_delimiter}");
-
-                    reportedProperties["delimiter"] = _delimiter;
-                }
-
-                if (desiredProperties.Contains("ignoreEmptyLines"))
-                {
-                    if (desiredProperties["ignoreEmptyLines"] != null)
-                    {
-                        _ignoreEmptyLines = desiredProperties["ignoreEmptyLines"];
-                    }
-                    else
-                    {
-                        _ignoreEmptyLines = true;
-                    }
-
-                    Log.Information($"Ignore empty lines changed to: {_ignoreEmptyLines}");
-
-                    reportedProperties["ignoreEmptyLines"] = _ignoreEmptyLines;
-                }
-
-                if (reportedProperties.Count > 0)
-                {
-                    client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
-                }
-
-                //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
-
-                InitSerialPort();
-
-                if (_direction == "Read")
-                {
-                    _thread = new Thread(() => ThreadBody(client));
-                    _thread.Start();
-                    Log.Information("New 'Read' task started");
-                }
-
-                _changingDesiredProperties = false;
-            }
-            catch (AggregateException ex)
-            {
-                foreach (Exception exception in ex.InnerExceptions)
-                {
-                    Log.Error($"Error when receiving desired property: {0}", exception);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Error($"Error when receiving desired property: {0}", ex.Message);
-            }
-
-            // Under all circumstances, always report 'Completed' to prevent unlimited retries on same message
-            return Task.CompletedTask;
         }
 
         /// <summary>
