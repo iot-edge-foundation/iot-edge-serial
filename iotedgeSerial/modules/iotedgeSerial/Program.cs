@@ -26,8 +26,7 @@ namespace iotedgeSerial
         private static int _dataBits = 8;
         private static StopBits _stopBits = StopBits.One;
         private static int _sleepInterval;
-
-        private static string _delimiter = "";
+        private static string _delimiter = string.Empty;
         private static bool _ignoreEmptyLines = true;
 
         private static ModuleClient _ioTHubModuleClient = null;
@@ -60,7 +59,6 @@ namespace iotedgeSerial
         /// </summary>
         static async Task Init()
         {
-
             MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
             ITransportSettings[] settings = { mqttSetting };
 
@@ -196,14 +194,18 @@ namespace iotedgeSerial
 
             var buf = new byte[1];
 
-
-            var i = _serialPort.Read(buf, 0, 1);
-
-            var str = System.Text.Encoding.Default.GetString(buf);
-
-            //read until end delimiter is reached.
+            //read until end delimiter is reached eg. \r\n in 12345\r\n67890
             while (bytesRead < 1024)
             {
+                var i = _serialPort.Read(buf, 0, 1);
+
+                if (i < 1)
+                {
+                    continue;
+                }
+
+                var str = System.Text.Encoding.Default.GetString(buf);
+
                 temp.Add(buf[0]);
 
                 if (str[0] != _delimiter[delimiterIndex])
@@ -220,9 +222,6 @@ namespace iotedgeSerial
                     }
                 }
 
-                i = _serialPort.Read(buf, 0, 1);
-
-                str = System.Text.Encoding.Default.GetString(buf);
                 bytesRead++;
             }
 
@@ -231,6 +230,7 @@ namespace iotedgeSerial
                 Log.Warning("Delimiter not found in last 1024 bytes read.");
                 temp.Clear();
             }
+
             return temp.ToArray();
         }
 
@@ -339,7 +339,6 @@ namespace iotedgeSerial
                             case "Space":
                                 _parity = Parity.Space;
                                 break;
-
                         };
                     }
                     else
@@ -406,7 +405,7 @@ namespace iotedgeSerial
                     }
                     else
                     {
-                        _delimiter = "";
+                        _delimiter = string.Empty;
                     }
 
                     Log.Information($"Delimiter changed to: {_delimiter}");
