@@ -262,7 +262,8 @@ namespace iotedgeSerial
 
             if (bytesRead == 1024)
             {
-                Log.Warning("Delimiter not found in last 1024 bytes read.");
+                Log.Warning($"Delimiter '{_delimiter}' not found in last 1024 bytes read.");
+                Log.Debug
                 temp.Clear();
             }
 
@@ -273,6 +274,8 @@ namespace iotedgeSerial
         {
             //lock (_lock)
             //{
+                Log.Information("Changing desired properties");
+                
                 _changingDesiredProperties = true;
 
                 if (_direction == "Read" && _thread != null)
@@ -285,7 +288,8 @@ namespace iotedgeSerial
 
                 if (desiredProperties.Count == 0)
                 {
-                    return Task.CompletedTask;
+                    Log.Information("No desired properties found");
+                    return Task.CompletedTask; 
                 }
 
                 try
