@@ -482,7 +482,7 @@ namespace iotedgeSerial
 
                 if (_direction == "Read")
                 {
-                    _thread = new Thread(() => ThreadBody(_ioTHubModuleClient));
+                    _thread = new Thread(() => ThreadBody(client));
                     _thread.Start();
                     Log.Information("New 'Read' task started");
                 }
