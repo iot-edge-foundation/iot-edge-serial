@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Devices.Client;
-using Microsoft.Azure.Devices.Client.Transport.Mqtt;
 using Microsoft.Azure.Devices.Shared;
 using System.IO.Ports;
 using System.Collections.Generic;
@@ -16,21 +15,11 @@ namespace iotedgeSerial
 {
     class Program
     {
-        private static object _lock = new object();
-        private static Thread _thread = null;
-        private static bool _changingDesiredProperties = true;
-        private const int SleepInterval = 10;
-        private static ISerialDevice _serialPort = null;
-        private static string _device = "/dev/ttyS0";
+        static bool m_run = true;
+    
+        static ModuleConfig _ModuleConfig = null;
 
-        private static string _direction = "Read";
-        private static int _baudRate = 9600;
-        private static Parity _parity = Parity.None;
-        private static int _dataBits = 8;
-        private static StopBits _stopBits = StopBits.One;
-        private static int _sleepInterval;
-        private static string _delimiter = string.Empty;
-        private static bool _ignoreEmptyLines = true;
+        static List<Task> m_task_list = new List<Task>();
 
         private static ModuleClient _ioTHubModuleClient = null;
 
@@ -62,450 +51,130 @@ namespace iotedgeSerial
         /// </summary>
         static async Task Init()
         {
-            MqttTransportSettings mqttSetting = new MqttTransportSettings(TransportType.Mqtt_Tcp_Only);
-            ITransportSettings[] settings = { mqttSetting };
-
-            // Open a connection to the Edge runtime
-            _ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
-
-            //TODO: when publishing to Azure IoT Edge Modules Marketplace
-            //ioTHubModuleClient.ProductInfo = "...";
-
-            await _ioTHubModuleClient.OpenAsync();
-            Log.Information($"IoT Hub module client initialized.");
-            Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
-            Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
-
-            // Execute callback method for Twin desired properties updates
-            var twin = await _ioTHubModuleClient.GetTwinAsync();
-            await onDesiredPropertiesUpdate(twin.Properties.Desired, _ioTHubModuleClient);
-
-            // Attach a callback for updates to the module twin's desired properties.
-            // TODO: USE SAME STRATEGY FOR STOP/START SERVICE (DURING RECEPTION OF NEW SETTINGS) AS ORIGINAL SERVICE 
-            await _ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(onDesiredPropertiesUpdate, _ioTHubModuleClient);
-
-            if (_direction == "Write")
-            {
-                // Register callback to be called when a message is received by the module
-                await _ioTHubModuleClient.SetInputMessageHandlerAsync("serialInput", WriteToSerial, _ioTHubModuleClient);
-                Log.Information($"Call back method registered for incoming messages on input 'serialInput'");
-            }
-        }
-
-        private static void DisposeSerialPort()
-        {
-            if (_serialPort != null)
-            {
-                _serialPort.Close();
-                _serialPort.Dispose();
-                _serialPort = null;
-
-                Log.Information($"Serial port '{_device}' disposed");
-            }
-            Log.Debug("Nothing to dispose");
-        }
-
-        private static void InitSerialPort()
-        {
-            if (_device.Substring(0, 3) == "COM" || _device.Substring(0, 8) == "/dev/tty" || _device.Substring(0, 11) == "/dev/rfcomm")
-            {
-                try
-                {
-                    switch (_direction)
-                    {
-                        case "Read":
-                            Log.Information($"Opening '{_device}' for reading...");
-                            break;
-                        case "Write":
-                            Log.Information($"Opening '{_device}' for writing...");
-                            break;
-                    }
-                    OpenSerial(_device, _baudRate, _parity, _dataBits, _stopBits);
-                }
-                catch (Exception ex)
-                {
-                    //clean up interrupted serial connection
-                    Log.Error($"Exception: {ex.ToString()}");
-                    _serialPort.Dispose();
-                    _serialPort = null;
-                }
-            }
-        }
-
-        private static async void ThreadBody(object userContext)
-        {
             try
             {
-                var client = userContext as ModuleClient;
+                var setting = new AmqpTransportSettings(TransportType.Amqp_Tcp_Only);
+                ITransportSettings[] settings = { setting };
 
-                if (client == null)
-                {
-                    throw new InvalidOperationException($"[INF][{DateTime.UtcNow}] UserContext for sending message doesn't contain expected values");
-                }
+                // Open a connection to the Edge runtime
+                _ioTHubModuleClient = await ModuleClient.CreateFromEnvironmentAsync(settings);
 
-                //looping infinitely
-                while (true)
-                {
-                    var response = ReadResponse();
+                //HOLD: when publishing to Azure IoT Edge Modules Marketplace
+                //ioTHubModuleClient.ProductInfo = "...";
 
-                    if (_ignoreEmptyLines
-                                    && response.Length == 0)
-                    {
-                        continue;
-                    }
+                await _ioTHubModuleClient.OpenAsync();
+                Log.Information($"IoT Hub module client initialized.");
+                Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
+                Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
 
-                    var str = System.Text.Encoding.Default.GetString(response);
+                // Execute callback method for Twin desired properties updates
+                var twin = await _ioTHubModuleClient.GetTwinAsync();
+                await OnDesiredPropertiesUpdate(twin.Properties.Desired, _ioTHubModuleClient);
 
-                    Log.Information($"Data read from '{_device}': '{str}'");
-
-                    var serialMessage = new SerialMessage
-                    {
-                        Data = str,
-                        TimestampUtc = DateTime.UtcNow,
-                        Device = _device
-                    };
-
-                    var jsonMessage = JsonConvert.SerializeObject(serialMessage);
-
-                    Log.Information($"Message out: '{jsonMessage}'");
-
-                    var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
-                    pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
-
-                    await client.SendEventAsync("serialOutput", pipeMessage);
-
-                    Thread.Sleep(_sleepInterval);
-                }
+                // Attach a callback for updates to the module twin's desired properties.
+                await _ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, _ioTHubModuleClient);
             }
-            catch (ThreadAbortException ex)
+            catch (AggregateException ex)
             {
-                Log.Information($"Abort {ex}");
+                foreach (Exception exception in ex.InnerExceptions)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Error when initializing module: {0}", exception);
+                }
             }
-
         }
 
-        static async Task<MessageResponse> WriteToSerial(Message message, object userContext)
+        static async Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
-            if (_changingDesiredProperties)
+            Log.Information("[debug] OnDesiredPropertiesUpdate started");
+
+            var ioTHubModuleClient = userContext as ModuleClient;
+
+            try
             {
-                // Abandon all incoming commands as long as the desired properties are changing.
-                await Task.Delay(TimeSpan.FromSeconds(0));
-                Log.Information("Discarding incoming message");
-                return MessageResponse.Abandoned;
-            }
+                // stop all activities while updating configuration
+                await ioTHubModuleClient.SetInputMessageHandlerAsync(
+                "serialInput",
+                DummyCallBack,
+                null);
 
-            var moduleClient = userContext as ModuleClient;
-            if (moduleClient == null)
+                Log.Information("[debug] dummy attached");
+
+                m_run = false;
+                await Task.WhenAll(m_task_list); // wait until all tasks are completed
+
+                Log.Information("[debug] Waited for all tasks to complete");
+
+                m_task_list.Clear();
+                m_run = true;
+
+                Log.Information("[debug] list cleared");
+
+                // start new activities with new set of desired properties
+                await SetupNewTasks(desiredProperties, ioTHubModuleClient);
+            }
+            catch (AggregateException ex)
             {
-                throw new InvalidOperationException("UserContext doesn't contain expected values");
+                foreach (Exception exception in ex.InnerExceptions)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Error when receiving desired property: {0}", exception);
+                }
             }
-
-            byte[] messageBytes = message.GetBytes();
-
-            var jsonMessage = System.Text.Encoding.UTF8.GetString(messageBytes);
-            var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(jsonMessage, typeof(SerialCommand));
-
-            byte[] valueBytes = Encoding.UTF8.GetBytes(serialCommand.Value);
-            byte[] delimiterBytes = Encoding.UTF8.GetBytes(_delimiter);
-            byte[] totalBytes = valueBytes.Concat(delimiterBytes).ToArray();
-
-            if (totalBytes.Length > 0)
+            catch (Exception ex)
             {
-                _serialPort.Write(totalBytes, 0, totalBytes.Length);
-                Log.Information($"Data written to '{_device}': '{Encoding.UTF8.GetString(totalBytes)}'");
+                Console.WriteLine();
+                Console.WriteLine("Error when receiving desired property: {0}", ex.Message);
             }
-
-            return MessageResponse.Completed;
         }
 
-        private static void OpenSerial(string slaveConnection, int baudRate, Parity parity, int dataBits, StopBits stopBits)
+        static async Task<MessageResponse> DummyCallBack(Message message, object userContext)
         {
-            _serialPort = SerialDeviceFactory.CreateSerialDevice(slaveConnection, baudRate, parity, dataBits, stopBits);
-
-            _serialPort.Open();
-            Log.Information($"Serial port '{_device}' opened");
+            await Task.Delay(TimeSpan.FromSeconds(0));
+            return MessageResponse.Abandoned;
         }
 
-        private static byte[] ReadResponse()
-        {
-            int bytesRead = 0;
-
-            int delimiterIndex = 0;
-
-            var temp = new List<byte>();
-
-            var buf = new byte[1];
-
-            //read until end delimiter is reached eg. \r\n in 12345\r\n67890
-            while (bytesRead < 1024)
-            {
-                var i = _serialPort.Read(buf, 0, 1);
-
-                if (i < 1)
-                {
-                    continue;
-                }
-
-                var str = System.Text.Encoding.Default.GetString(buf);
-
-                temp.Add(buf[0]);
-
-                if (str[0] != _delimiter[delimiterIndex])
-                {
-                    delimiterIndex = 0;
-                }
-                else
-                {
-                    delimiterIndex++;
-                    if (delimiterIndex == _delimiter.Length)
-                    {
-                        temp.RemoveRange(temp.Count - _delimiter.Length, _delimiter.Length);
-                        break;
-                    }
-                }
-
-                bytesRead++;
-            }
-
-            if (bytesRead == 1024)
-            {
-                Log.Warning($"Delimiter '{ShowControlCharacters(_delimiter)}' not found in last 1024 bytes read.");
-                //Log.Debug
-                temp.Clear();
-            }
-
-            return temp.ToArray();
-        }
-
-        private static Task onDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
+        private static async Task SetupNewTasks(TwinCollection desiredProperties, ModuleClient client)
         {
             Log.Information("Changing desired properties");
 
-            _changingDesiredProperties = true;
-
-            if (_direction == "Read" && _thread != null)
-            {
-                _thread.Abort();
-                _thread = null;
-                Log.Information("Current 'Read' task stopped");
-            }
-            Log.Debug("carry on with disposing serial port");
-
-            DisposeSerialPort();
-
-            Log.Debug("Carry on with setting desired properties");
-
-            if (desiredProperties.Count == 0)
-            {
-                Log.Information("No desired properties found");
-                return Task.CompletedTask;
-            }
-
             try
             {
-                Log.Information($"Desired property change: {JsonConvert.SerializeObject(desiredProperties)}");
+                var  serializedStr = JsonConvert.SerializeObject(desiredProperties);
 
-                var client = userContext as ModuleClient;
+                Log.Information($"Desired property change: {serializedStr}");
 
-                if (client == null)
-                {
-                    throw new InvalidOperationException("UserContext doesn't contain expected ModuleClient");
-                }
+                ModuleConfig moduleConfig = JsonConvert.DeserializeObject<ModuleConfig>(serializedStr);
 
-                var reportedProperties = new TwinCollection();
+                moduleConfig.Validate();
 
-                if (desiredProperties.Contains("sleepInterval"))
-                {
-                    if (desiredProperties["sleepInterval"] != null)
-                    {
-                        _sleepInterval = desiredProperties["sleepInterval"];
-                    }
-                    else
-                    {
-                        _sleepInterval = SleepInterval;
-                    }
-
-                    Log.Information($"Interval changed to: {_sleepInterval}");
-
-                    reportedProperties["sleepInterval"] = _sleepInterval;
-                }
-
-                if (desiredProperties.Contains("device"))
-                {
-                    if (desiredProperties["device"] != null)
-                    {
-                        _device = desiredProperties["device"];
-                    }
-                    else
-                    {
-                        _device = "No device configured";
-                    }
-
-                    Log.Information($"Device changed to: {_device}");
-
-                    reportedProperties["device"] = _device;
-                }
-
-                if (desiredProperties.Contains("direction"))
-                {
-                    if (desiredProperties["direction"] != null)
-                    {
-                        _direction = desiredProperties["direction"];
-                    }
-                    else
-                    {
-                        _direction = "Read";
-                    }
-
-                    Log.Information($"Direction changed to: {_direction}");
-
-                    reportedProperties["direction"] = _direction;
-                }
-
-                if (desiredProperties.Contains("baudRate"))
-                {
-                    if (desiredProperties["baudRate"] != null)
-                    {
-                        _baudRate = desiredProperties["baudRate"];
-                    }
-                    else
-                    {
-                        _baudRate = 9600;
-                    }
-
-                    Log.Information($"baud rate changed to {_baudRate}");
-
-                    reportedProperties["baudRate"] = _baudRate;
-                }
-
-                if (desiredProperties.Contains("parity"))
-                {
-                    if (desiredProperties["parity"] != null)
-                    {
-                        switch (desiredProperties["parity"])
-                        {
-                            case "None":
-                                _parity = Parity.None;
-                                break;
-                            case "Even":
-                                _parity = Parity.Even;
-                                break;
-                            case "Odd":
-                                _parity = Parity.Odd;
-                                break;
-                            case "Mark":
-                                _parity = Parity.Mark;
-                                break;
-                            case "Space":
-                                _parity = Parity.Space;
-                                break;
-                        };
-                    }
-                    else
-                    {
-                        _parity = Parity.None;
-                    }
-
-                    Log.Information($"Parity changed to: {_parity.ToString()}");
-
-                    reportedProperties["parity"] = _parity.ToString();
-                }
-
-                if (desiredProperties.Contains("dataBits"))
-                {
-                    if (desiredProperties["dataBits"] != null)
-                    {
-                        _dataBits = desiredProperties["dataBits"];
-                    }
-                    else
-                    {
-                        _dataBits = 0;
-                    }
-
-                    Log.Information($"Data bits changed to: {_dataBits}");
-
-                    reportedProperties["dataBits"] = _dataBits;
-                }
-
-                if (desiredProperties.Contains("stopBits"))
-                {
-                    if (desiredProperties["stopBits"] != null)
-                    {
-                        switch (desiredProperties["stopBits"])
-                        {
-                            case "None":
-                                _stopBits = StopBits.None;
-                                break;
-                            case "One":
-                                _stopBits = StopBits.One;
-                                break;
-                            case "OnePointFive":
-                                _stopBits = StopBits.OnePointFive;
-                                break;
-                            case "Two":
-                                _stopBits = StopBits.Two;
-                                break;
-                        };
-                    }
-                    else
-                    {
-                        _stopBits = StopBits.None;
-                    }
-
-                    Log.Information($"Stop bits changed to: {_stopBits.ToString()}");
-
-                    reportedProperties["stopBits"] = _stopBits.ToString();
-                }
-
-                if (desiredProperties.Contains("delimiter"))
-                {
-                    if (desiredProperties["delimiter"] != null)
-                    {
-                        _delimiter = desiredProperties["delimiter"];
-                    }
-                    else
-                    {
-                        _delimiter = string.Empty;
-                    }
-
-                    Log.Information($"Delimiter changed to: {ShowControlCharacters(_delimiter)}");
-
-                    reportedProperties["delimiter"] = _delimiter;
-                }
-
-                if (desiredProperties.Contains("ignoreEmptyLines"))
-                {
-                    if (desiredProperties["ignoreEmptyLines"] != null)
-                    {
-                        _ignoreEmptyLines = desiredProperties["ignoreEmptyLines"];
-                    }
-                    else
-                    {
-                        _ignoreEmptyLines = true;
-                    }
-
-                    Log.Information($"Ignore empty lines changed to: {_ignoreEmptyLines}");
-
-                    reportedProperties["ignoreEmptyLines"] = _ignoreEmptyLines;
-                }
-
-                if (reportedProperties.Count > 0)
-                {
-                    client.UpdateReportedPropertiesAsync(reportedProperties).ConfigureAwait(false);
-                }
-
+                _ModuleConfig = moduleConfig;
+            
                 //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
-                Log.Debug("Initializing serial port after setting properties");
-                InitSerialPort();
 
-                if (_direction == "Read")
+                Log.Information("[debug] new desired twins are loaded into memory");
+
+                foreach(var dict in _ModuleConfig.PortConfigs)
                 {
-                    _thread = new Thread(() => ThreadBody(_ioTHubModuleClient));
-                    _thread.Start();
-                    Log.Information("New 'Read' task started");
+                    var key = dict.Key;
+                    var portConfig = dict.Value;
+
+                    Log.Information($"[debug] adding task {key}");
+
+                    var t = Task.Run(async () =>
+                    {
+                        await SerialTaskBody(key, portConfig, client);
+                    });
+
+                    m_task_list.Add(t);
+
+                    Log.Information($"[debug] task {key} added ({m_task_list.Count} tasks loaded)");
                 }
-                Log.Debug("Done");
-                _changingDesiredProperties = false;
+
+                // report back received properties
+                string reportedPropertiesJson = JsonConvert.SerializeObject(moduleConfig);
+                var reportedProperties = new TwinCollection(reportedPropertiesJson);
+                await client.UpdateReportedPropertiesAsync(reportedProperties);
             }
             catch (AggregateException ex)
             {
@@ -520,11 +189,187 @@ namespace iotedgeSerial
             }
 
             // Under all circumstances, always report 'Completed' to prevent unlimited retries on same message
-            return Task.CompletedTask;
+            /// TODO WUT??? return Task.CompletedTask;
+        }
+
+        private static ISerialDevice InitSerialPort(PortConfig portConfig)
+        {            
+            if (portConfig.device.Substring(0, 3) == "COM" 
+                    || portConfig.device.Substring(0, 8) == "/dev/tty" 
+                    || portConfig.device.Substring(0, 11) == "/dev/rfcomm")
+            {
+                try
+                {
+                    switch (portConfig.direction)
+                    {
+                        case "Read":
+                            Log.Information($"Opening '{portConfig.device}' for reading...");
+                            break;
+                        case "Write":
+                            Log.Information($"Opening '{portConfig.device}' for writing...");
+                            break;
+                    }
+
+                    var serialPort = OpenSerial(portConfig.device, 
+                                                portConfig.baudRate, 
+                                                portConfig.Parity, 
+                                                portConfig.dataBits, 
+                                                portConfig.StopBits);
+
+                    return serialPort;
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"Exception: {ex.ToString()}");
+                }
+            }
+
+            return null;
+        }
+
+        private static void DisposeSerialPort(ISerialDevice serialPort)
+        {
+            if (serialPort != null)
+            {
+                serialPort.Close();
+//                serialPort.Dispose();
+  //              serialPort = null;
+
+                Log.Information($"Serial port disposed");
+            }
+
+            Log.Debug("No serial port to dispose");
+        }
+
+        private static async Task SerialTaskBody(string key, PortConfig portConfig, ModuleClient client)
+        {
+            Log.Information($"[debug] creating port");
+
+            // create serial port
+            var serialPort = InitSerialPort(portConfig);
+
+            Log.Information($"[debug] port created");
+
+            if (portConfig.direction == "Read")
+            {
+                Log.Information($"[debug] start read loop");
+
+                //looping infinitely
+                while (m_run)
+                {
+                    var response = ReadResponse(serialPort);
+
+                    if (portConfig.ignoreEmptyLines
+                                    && response.Length == 0)
+                    {
+                        Log.Information($"[debug] ignore empty line");
+                        continue;
+                    }
+
+                    var str = System.Text.Encoding.Default.GetString(response);
+
+                    Log.Information($"Data read from '{portConfig.device}': '{str}'");
+
+                    var serialMessage = new SerialMessage
+                    {
+                        Data = str,
+                        TimestampUtc = DateTime.UtcNow,
+                        Device = portConfig.device
+                    };
+
+                    var jsonMessage = JsonConvert.SerializeObject(serialMessage);
+
+                    Log.Information($"Message out: '{jsonMessage}'");
+
+                    var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
+                    pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
+
+                    await client.SendEventAsync("serialOutput", pipeMessage);
+
+                    Log.Information($"Message sent");
+
+                    // wait a certain interval
+                    await Task.Delay(portConfig.sleepInterval);
+                }
+
+                Log.Information($"[debug] disposing port {key}");
+
+                // Ingest stopped. Tear down port
+                DisposeSerialPort(serialPort);
+
+                Log.Information($"[debug] disposed port {key}");
+            }
+        }
+
+        private static ISerialDevice OpenSerial(string connection, int baudRate, Parity parity, int dataBits, StopBits stopBits)
+        {
+            ISerialDevice serialDevice = SerialDeviceFactory.CreateSerialDevice(connection, baudRate, parity, dataBits, stopBits);
+            serialDevice.Open();
+            Log.Information($"Serial port '{connection}' opened");
+
+            return serialDevice;            
+        }
+
+        private static byte[] ReadResponse(ISerialDevice serialPort)
+        {
+            int bytesRead = 0;
+
+            int delimiterIndex = 0;
+
+            var temp = new List<byte>();
+
+            var buf = new byte[1];
+
+            //read until end delimiter is reached eg. \r\n in 12345\r\n67890
+            while (m_run && bytesRead < 1024)
+            {
+                var i = serialPort.Read(buf, 0, 1);
+
+                if (i < 1)
+                {
+                    continue;
+                }
+
+                var str = System.Text.Encoding.Default.GetString(buf);
+
+                temp.Add(buf[0]);
+
+                if (str[0] != _ModuleConfig.PortConfigs["com0"].delimiter[delimiterIndex])
+                {
+                    delimiterIndex = 0;
+                }
+                else
+                {
+                    delimiterIndex++;
+                    if (delimiterIndex == _ModuleConfig.PortConfigs["com0"].delimiter.Length)
+                    {
+                        temp.RemoveRange(temp.Count - _ModuleConfig.PortConfigs["com0"].delimiter.Length, _ModuleConfig.PortConfigs["com0"].delimiter.Length);
+                        break;
+                    }
+                }
+
+                bytesRead++;
+            }
+
+            if (bytesRead == 1024)
+            {
+                Log.Warning($"Delimiter '{ShowControlCharacters(_ModuleConfig.PortConfigs["com0"].delimiter)}' not found in last 1024 bytes read.");
+                temp.Clear();
+            }
+
+            if (!m_run)
+            {
+                Log.Warning("Shutdown reading");
+                temp.Clear();
+            }
+
+            Log.Warning("ready to show");
+
+            return temp.ToArray();
         }
 
         /// <summary>
-        ///
+        /// comtrol characters are shown in plain text
         /// </summary>
         private static string ShowControlCharacters(string characters)
         {
