@@ -78,8 +78,8 @@ namespace iotedgeSerial
             {
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Error when initializing module: {0}", exception);
+                    Console.WriteLine(); // todo
+                    Console.WriteLine("Error when initializing module: {0}", exception); //todo
                 }
             }
         }

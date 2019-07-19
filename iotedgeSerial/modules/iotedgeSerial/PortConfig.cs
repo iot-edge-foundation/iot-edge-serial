@@ -4,8 +4,9 @@ namespace iotedgeSerial
 
     public class PortConfig
     {
-        public const string cDirection = "Read";
+        public const string CDirection = "Read";
         public const string CDevice = "/dev/ttyS0";
+       
         public const int CSleepInterval  = 10;
         public const int CBaudRate = 9600;
         public const string CParity = "None";
