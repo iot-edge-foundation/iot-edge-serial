@@ -17,8 +17,6 @@ namespace iotedgeSerial
     {
         static bool _run = true;  
     
-        static ModuleConfig _ModuleConfig = null;
-
         static List<Task> _task_list = new List<Task>(); 
 
         private static ModuleClient _ioTHubModuleClient = null;
@@ -147,14 +145,12 @@ namespace iotedgeSerial
                 ModuleConfig moduleConfig = JsonConvert.DeserializeObject<ModuleConfig>(serializedStr);
 
                 moduleConfig.Validate();
-
-                _ModuleConfig = moduleConfig;
             
                 //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
 
                 Log.Information("[debug] new desired twins are loaded into memory");
 
-                foreach(var dict in _ModuleConfig.PortConfigs)
+                foreach(var dict in moduleConfig.PortConfigs)
                 {
                     var key = dict.Key;
                     var portConfig = dict.Value;
