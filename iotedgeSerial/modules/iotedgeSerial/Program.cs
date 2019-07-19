@@ -15,11 +15,11 @@ namespace iotedgeSerial
 {
     class Program
     {
-        static bool m_run = true;  // todo naam
+        static bool _run = true;  
     
         static ModuleConfig _ModuleConfig = null;
 
-        static List<Task> m_task_list = new List<Task>(); // todo naam
+        static List<Task> _task_list = new List<Task>(); 
 
         private static ModuleClient _ioTHubModuleClient = null;
 
@@ -100,13 +100,13 @@ namespace iotedgeSerial
 
                 Log.Information("[debug] dummy attached");
 
-                m_run = false;
-                await Task.WhenAll(m_task_list); // wait until all tasks are completed
+                _run = false;
+                await Task.WhenAll(_task_list); // wait until all tasks are completed
 
                 Log.Information("[debug] Waited for all tasks to complete");
 
-                m_task_list.Clear();
-                m_run = true;
+                _task_list.Clear();
+                _run = true;
 
                 Log.Information("[debug] list cleared");
 
@@ -170,9 +170,9 @@ namespace iotedgeSerial
                         // graag alleen uitvoeren voor die ene poort
                     });
 
-                    m_task_list.Add(t);
+                    _task_list.Add(t);
 
-                    Log.Information($"[debug] task {key} added ({m_task_list.Count} tasks loaded)");
+                    Log.Information($"[debug] task {key} added ({_task_list.Count} tasks loaded)");
                 }
 
                 // report back received properties
@@ -254,7 +254,7 @@ namespace iotedgeSerial
                 Log.Information($"[debug] start read loop");
 
                 //looping infinitely
-                while (m_run)
+                while (_run)
                 {
                     var response = ReadResponse(serialPort);
 
@@ -320,7 +320,7 @@ namespace iotedgeSerial
             var buf = new byte[1];
 
             //read until end delimiter is reached eg. \r\n in 12345\r\n67890
-            while (m_run && bytesRead < 1024)
+            while (_run && bytesRead < 1024)
             {
                 var i = serialPort.Read(buf, 0, 1);
 
@@ -356,7 +356,7 @@ namespace iotedgeSerial
                 temp.Clear();
             }
 
-            if (!m_run)
+            if (!_run)
             {
                 Log.Warning("Shutdown reading");
                 temp.Clear();
