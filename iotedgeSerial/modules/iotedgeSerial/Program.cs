@@ -256,7 +256,7 @@ namespace iotedgeSerial
                 //looping infinitely
                 while (_run)
                 {
-                    var response = ReadResponse(serialPort);
+                    var response = ReadResponse(serialPort, portConfig);
 
                     if (portConfig.ignoreEmptyLines
                                     && response.Length == 0)
@@ -309,7 +309,7 @@ namespace iotedgeSerial
             return serialDevice;            
         }
 
-        private static byte[] ReadResponse(ISerialDevice serialPort)
+        private static byte[] ReadResponse(ISerialDevice serialPort, PortConfig portConfig)
         {
             int bytesRead = 0;
 
@@ -333,16 +333,17 @@ namespace iotedgeSerial
 
                 temp.Add(buf[0]);
 
-                if (str[0] != _ModuleConfig.PortConfigs["com0"].delimiter[delimiterIndex])
+                if (str[0] != portConfig.delimiter[delimiterIndex])
                 {
                     delimiterIndex = 0;
                 }
                 else
                 {
                     delimiterIndex++;
-                    if (delimiterIndex == _ModuleConfig.PortConfigs["com0"].delimiter.Length)
+                    if (delimiterIndex == portConfig.delimiter.Length)
                     {
-                        temp.RemoveRange(temp.Count - _ModuleConfig.PortConfigs["com0"].delimiter.Length, _ModuleConfig.PortConfigs["com0"].delimiter.Length);
+                        temp.RemoveRange(temp.Count - portConfig.delimiter.Length,
+                                        portConfig.delimiter.Length);
                         break;
                     }
                 }
@@ -352,7 +353,7 @@ namespace iotedgeSerial
 
             if (bytesRead == 1024)
             {
-                Log.Warning($"Delimiter '{ShowControlCharacters(_ModuleConfig.PortConfigs["com0"].delimiter)}' not found in last 1024 bytes read.");
+                Log.Warning($"Delimiter '{ShowControlCharacters(portConfig.delimiter)}' not found in last 1024 bytes read.");
                 temp.Clear();
             }
 
