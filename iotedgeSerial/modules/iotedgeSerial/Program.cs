@@ -15,11 +15,11 @@ namespace iotedgeSerial
 {
     class Program
     {
-        static bool m_run = true;
+        static bool m_run = true;  // todo naam
     
         static ModuleConfig _ModuleConfig = null;
 
-        static List<Task> m_task_list = new List<Task>();
+        static List<Task> m_task_list = new List<Task>(); // todo naam
 
         private static ModuleClient _ioTHubModuleClient = null;
 
@@ -164,6 +164,10 @@ namespace iotedgeSerial
                     var t = Task.Run(async () =>
                     {
                         await SerialTaskBody(key, portConfig, client);
+
+                        // ik moet hier binnen de TASK een stukje code kunnen uitvoeren (schrijven naar poort)
+                        // indien er buiten de task een input messagre arriveert
+                        // graag alleen uitvoeren voor die ene poort
                     });
 
                     m_task_list.Add(t);
@@ -187,9 +191,6 @@ namespace iotedgeSerial
             {
                 Log.Error($"Error when receiving desired property: {0}", ex.Message);
             }
-
-            // Under all circumstances, always report 'Completed' to prevent unlimited retries on same message
-            /// TODO WUT??? return Task.CompletedTask;
         }
 
         private static ISerialDevice InitSerialPort(PortConfig portConfig)
@@ -232,8 +233,6 @@ namespace iotedgeSerial
             if (serialPort != null)
             {
                 serialPort.Close();
-//                serialPort.Dispose();
-  //              serialPort = null;
 
                 Log.Information($"Serial port disposed");
             }
@@ -284,7 +283,7 @@ namespace iotedgeSerial
                     var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
                     pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
-                    await client.SendEventAsync("serialOutput", pipeMessage);
+                    await client.SendEventAsync(key, pipeMessage);
 
                     Log.Information($"Message sent");
 

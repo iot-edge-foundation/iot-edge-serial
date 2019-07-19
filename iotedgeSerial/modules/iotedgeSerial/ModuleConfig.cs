@@ -35,13 +35,11 @@ namespace iotedgeSerial
                     invalidConfigs.Add(key);
                 }
 
-                if (string.IsNullOrEmpty(portConfig.device))
+                if (string.IsNullOrEmpty(portConfig.direction))
                 {
                     portConfig.direction = PortConfig.cDirection;
                     Console.WriteLine($"Invalid direction for {key}. Set to default {PortConfig.cDirection}");
                 }
-
-                if (string.IsNullOrEmpty(portConfig.direction))
 
                 if (portConfig.sleepInterval < 1)
                 {
