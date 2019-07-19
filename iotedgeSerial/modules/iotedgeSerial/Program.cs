@@ -285,6 +285,7 @@ namespace iotedgeSerial
 
             if (_direction == "Read" && _thread != null)
             {
+                Log.Debug("about to abort, will I live afterwards?");
                 _thread.Abort();
                 _thread = null;
                 Log.Information("Current 'Read' task stopped");
