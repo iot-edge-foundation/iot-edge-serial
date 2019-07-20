@@ -243,21 +243,14 @@ namespace iotedgeSerial
             {
                 try
                 {
-                    switch (portConfig.Direction)
-                    {
-                        case "Read":
-                            Log.Information($"Opening '{portConfig.Device}' for reading...");
-                            break;
-                        case "Write":
-                            Log.Information($"Opening '{portConfig.Device}' for writing...");
-                            break;
-                    }
+                    Log.Debug($"Opening port '{portConfig.Device}' for '{portConfig.Direction}'");
 
                     var serialPort = OpenSerial(portConfig.Device, 
                                                 portConfig.BaudRate, 
                                                 portConfig.ParityEnum, 
                                                 portConfig.DataBits, 
-                                                portConfig.StopBitsEnum);
+                                                portConfig.StopBitsEnum,
+                                                portConfig.Direction);
 
                     return serialPort;
                 }
@@ -276,7 +269,7 @@ namespace iotedgeSerial
             {
                 serialPort.Close();
 
-                Log.Information($"Serial port disposed");
+                Log.Debug($"Serial port disposed");
             }
 
             Log.Debug("No serial port to dispose");
@@ -284,16 +277,16 @@ namespace iotedgeSerial
 
         private static async Task SerialTaskBody(string key, PortConfig portConfig, ModuleClient client, SerialMessageBroadcaster serialMessageBroadcaster)
         {
-            Log.Debug($" creating port");
+            Log.Debug($"Creating port");
 
             // create serial port
             var serialPort = InitSerialPort(portConfig);
 
-            Log.Debug($" port created");
+            Log.Debug($"Port '{key}' created");
 
             if (portConfig.Direction == "Read")
             {
-                Log.Debug($" start read loop");
+                Log.Debug($"Start read loop");
 
                 // Looping infinitely until desired properties are updated.
                 while (_run)
@@ -303,7 +296,7 @@ namespace iotedgeSerial
                     if (portConfig.IgnoreEmptyLines
                                     && response.Length == 0)
                     {
-                        Log.Debug($" ignore empty line");
+                        Log.Debug($"Ignore empty line");
                         continue;
                     }
 
@@ -320,14 +313,14 @@ namespace iotedgeSerial
 
                     var jsonMessage = JsonConvert.SerializeObject(serialMessage);
 
-                    Log.Information($"Message out: '{jsonMessage}'");
+                    Log.Debug($"Message out: '{jsonMessage}'");
 
                     var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
                     pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
                     await client.SendEventAsync(key, pipeMessage);
 
-                    Log.Information($"Message sent");
+                    Log.Debug($"Message sent");
 
                     // wait a certain interval
                     await Task.Delay(portConfig.SleepInterval);
@@ -366,7 +359,7 @@ namespace iotedgeSerial
                         if (totalBytes.Length > 0)
                         {
                              serialPort.Write(totalBytes, 0, totalBytes.Length);
-                            Log.Information($"Data written to '{portConfig.Device}': '{Encoding.UTF8.GetString(totalBytes)}'");
+                            Log.Information($"Written to '{portConfig.Device}': '{Encoding.UTF8.GetString(totalBytes)}'");
                         }
 
                         Log.Debug($"BroadcastEvent message handled"); 
@@ -380,11 +373,12 @@ namespace iotedgeSerial
             }
         }
 
-        private static ISerialDevice OpenSerial(string connection, int baudRate, Parity parity, int dataBits, StopBits stopBits)
+        private static ISerialDevice OpenSerial(string connection, int baudRate, Parity parity, int dataBits, StopBits stopBits, string direction)
         {
             ISerialDevice serialDevice = SerialDeviceFactory.CreateSerialDevice(connection, baudRate, parity, dataBits, stopBits);
             serialDevice.Open();
-            Log.Information($"Serial port '{connection}' opened");
+            
+            Log.Information($"Serial port '{connection}' opened for '{direction}'");
 
             return serialDevice;            
         }
@@ -439,11 +433,11 @@ namespace iotedgeSerial
 
             if (!_run)
             {
-                Log.Warning("Shutdown reading");
+                Log.Debug("Shutdown reading");
                 temp.Clear();
             }
 
-            Log.Warning("ready to show");
+            Log.Debug("Ready to show");
 
             return temp.ToArray();
         }
@@ -510,7 +504,7 @@ namespace iotedgeSerial
             loggerConfiguration.Enrich.FromLogContext();
             Log.Logger = loggerConfiguration.CreateLogger();
 
-            Log.Information($"Initialized logger with log level {logLevel}");
+            Log.Information($"Initialized logger with log level '{logLevel}'");
         }
 
         private static void LogLogo()
