@@ -1,34 +1,40 @@
 namespace iotedgeSerial
 {
     using System.IO.Ports;
+    using Newtonsoft.Json;
 
     public class PortConfig
     {
-        public const string CDirection = "Read";
-        public const string CDevice = "/dev/ttyS0";
-       
-        public const int CSleepInterval  = 10;
-        public const int CBaudRate = 9600;
-        public const string CParity = "None";
-        public const int CDataBits =  8;
-        public const string CStopBits = "One";
-        public const string CDelimiter =  "\r\n";
-        public const bool CIgnoreEmptyLines  = true;
+        
+        [JsonProperty("direction")]
+        public string Direction {get; set;}
+        
+        [JsonProperty("device")]    
+        public string Device {get; set;}
+        
+        [JsonProperty("sleepInterval")] 
+        public int SleepInterval {get; set;} 
+        
+        [JsonProperty("baudRate")] 
+        public int BaudRate {get; set;} 
+        
+        [JsonProperty("parity")] 
+        public string Parity {get; set;}
 
-        public string direction {get; set;}
-        public string device {get; set;}
-        public int sleepInterval {get; set;} 
-        public int baudRate {get; set;} 
-        public string parity {get; set;}
+        public Parity ParityEnum {get; set;}
 
-        public Parity Parity {get; set;}
+        [JsonProperty("dataBits")] 
+        public int DataBits {get; set;} 
+        
+        [JsonProperty("stopBits")] 
+        public string StopBits {get; set;} 
 
-        public int dataBits {get; set;} 
-        public string stopBits {get; set;} 
+        public StopBits StopBitsEnum {get; set;} 
 
-        public StopBits StopBits {get; set;} 
-
-        public string delimiter {get; set;} 
-        public bool ignoreEmptyLines {get; set;} 
+        [JsonProperty("delimiter")] 
+        public string Delimiter {get; set;} 
+        
+        [JsonProperty("ignoreEmptyLines")] 
+        public bool IgnoreEmptyLines {get; set;} 
     }
 }

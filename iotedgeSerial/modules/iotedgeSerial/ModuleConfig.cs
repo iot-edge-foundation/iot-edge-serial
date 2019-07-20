@@ -13,6 +13,17 @@ namespace iotedgeSerial
             PortConfigs = portConfigs;
         }
 
+        private const string DefaultDirection = "Read";
+        private const string DefaultDevice = "/dev/ttyS0";
+       
+        private const int DefaultSleepInterval  = 10;
+        private const int DefaultBaudRate = 9600;
+        private const string DefaultParity = "None";
+        private const int DefaultDataBits =  8;
+        private const string DefaultStopBits = "One";
+        private const string DefaultDelimiter =  "\r\n";
+        private const bool DefaultIgnoreEmptyLines  = true;
+
         public void Validate()
         {
             List<string> invalidConfigs = new List<string>();
@@ -29,88 +40,88 @@ namespace iotedgeSerial
                     continue;
                 }
 
-                if (string.IsNullOrEmpty(portConfig.device))
+                if (string.IsNullOrEmpty(portConfig.Device))
                 {
                     Console.WriteLine($"missing device for {key}");
                     invalidConfigs.Add(key);
                 }
 
-                if (string.IsNullOrEmpty(portConfig.direction))
+                if (string.IsNullOrEmpty(portConfig.Direction))
                 {
-                    portConfig.direction = PortConfig.CDirection;
-                    Console.WriteLine($"Invalid direction for {key}. Set to default {PortConfig.CDirection}");
+                    portConfig.Direction = DefaultDirection;
+                    Console.WriteLine($"Invalid direction for {key}. Set to default {DefaultDirection}");
                 }
 
-                if (portConfig.sleepInterval < 1)
+                if (portConfig.SleepInterval < 1)
                 {
-                    portConfig.sleepInterval = PortConfig.CSleepInterval;
-                    Console.WriteLine($"Invalid sleep interval for {key}. Set to default {PortConfig.CSleepInterval}");
+                    portConfig.SleepInterval = DefaultSleepInterval;
+                    Console.WriteLine($"Invalid sleep interval for {key}. Set to default {DefaultSleepInterval}");
                 }
 
-                if (portConfig.baudRate < 1)
+                if (portConfig.BaudRate < 1)
                 {
-                    portConfig.baudRate = PortConfig.CBaudRate;
-                    Console.WriteLine($"Invalid baudRate for {key}. Set to default {PortConfig.CBaudRate}");
+                    portConfig.BaudRate = DefaultBaudRate;
+                    Console.WriteLine($"Invalid baudRate for {key}. Set to default {DefaultBaudRate}");
                 }
 
-                if (string.IsNullOrEmpty(portConfig.parity))
+                if (string.IsNullOrEmpty(portConfig.Parity))
                 {
-                    portConfig.parity = PortConfig.CParity;
-                    Console.WriteLine($"Missing parity for {key}. Set to default {PortConfig.CParity}");
+                    portConfig.Parity = DefaultParity;
+                    Console.WriteLine($"Missing parity for {key}. Set to default {DefaultParity}");
 
-                    switch (portConfig.parity)
+                    switch (portConfig.Parity)
                     {
                         case "None":
-                            portConfig.Parity = Parity.None;
+                            portConfig.ParityEnum = Parity.None;
                             break;
                         case "Even":
-                            portConfig.Parity = Parity.Even;
+                            portConfig.ParityEnum = Parity.Even;
                             break;
                         case "Odd":
-                            portConfig.Parity = Parity.Odd;
+                            portConfig.ParityEnum = Parity.Odd;
                             break;
                         case "Mark":
-                            portConfig.Parity = Parity.Mark;
+                            portConfig.ParityEnum = Parity.Mark;
                             break;
                         case "Space":
-                            portConfig.Parity = Parity.Space;
+                            portConfig.ParityEnum = Parity.Space;
                             break;
                     };
 
                 }
 
-                if (portConfig.dataBits < 1)
+                if (portConfig.DataBits < 1)
                 {
-                    portConfig.dataBits = PortConfig.CDataBits;
-                    Console.WriteLine($"Invalid databits for {key}. Set to default {PortConfig.CDataBits}");
+                    portConfig.DataBits = DefaultDataBits;
+                    Console.WriteLine($"Invalid databits for {key}. Set to default {DefaultDataBits}");
                 }
 
-                if (string.IsNullOrEmpty(portConfig.stopBits))
+                if (string.IsNullOrEmpty(portConfig.StopBits))
                 {
-                    portConfig.stopBits = PortConfig.CStopBits;
-                    Console.WriteLine($"Missing stopBits for {key}. Set to default {PortConfig.CStopBits}");
+                    portConfig.StopBits = DefaultStopBits;
+                    Console.WriteLine($"Missing stopBits for {key}. Set to default {DefaultStopBits}");
 
-                    switch (portConfig.stopBits)
+                    switch (portConfig.StopBits)
                     {
                         case "None":
-                            portConfig.StopBits = StopBits.None;
+                            portConfig.StopBitsEnum = StopBits.None;
                             break;
                         case "One":
-                            portConfig.StopBits = StopBits.One;
+                            portConfig.StopBitsEnum = StopBits.One;
                             break;
                         case "OnePointFive":
-                            portConfig.StopBits = StopBits.OnePointFive;
+                            portConfig.StopBitsEnum = StopBits.OnePointFive;
                             break;
                         case "Two":
-                            portConfig.StopBits = StopBits.Two;
+                            portConfig.StopBitsEnum = StopBits.Two;
                             break;
                     };
                 }
 
-                if (string.IsNullOrEmpty(portConfig.delimiter))
+                if (string.IsNullOrEmpty(portConfig.Delimiter))
                 {
-                    portConfig.delimiter = PortConfig.CDelimiter;
-                    Console.WriteLine($"Missing delimiter for {key}. Set to defailt {PortConfig.CDelimiter}");
+                    portConfig.Delimiter = DefaultDelimiter;
+                    Console.WriteLine($"Missing delimiter for {key}. Set to defailt {DefaultDelimiter}");
                 }
             }
 

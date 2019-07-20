@@ -233,27 +233,27 @@ namespace iotedgeSerial
 
         private static ISerialDevice InitSerialPort(PortConfig portConfig)
         {            
-            if (portConfig.device.Substring(0, 3) == "COM" 
-                    || portConfig.device.Substring(0, 8) == "/dev/tty" 
-                    || portConfig.device.Substring(0, 11) == "/dev/rfcomm")
+            if (portConfig.Device.Substring(0, 3) == "COM" 
+                    || portConfig.Device.Substring(0, 8) == "/dev/tty" 
+                    || portConfig.Device.Substring(0, 11) == "/dev/rfcomm")
             {
                 try
                 {
-                    switch (portConfig.direction)
+                    switch (portConfig.Direction)
                     {
                         case "Read":
-                            Log.Information($"Opening '{portConfig.device}' for reading...");
+                            Log.Information($"Opening '{portConfig.Device}' for reading...");
                             break;
                         case "Write":
-                            Log.Information($"Opening '{portConfig.device}' for writing...");
+                            Log.Information($"Opening '{portConfig.Device}' for writing...");
                             break;
                     }
 
-                    var serialPort = OpenSerial(portConfig.device, 
-                                                portConfig.baudRate, 
-                                                portConfig.Parity, 
-                                                portConfig.dataBits, 
-                                                portConfig.StopBits);
+                    var serialPort = OpenSerial(portConfig.Device, 
+                                                portConfig.BaudRate, 
+                                                portConfig.ParityEnum, 
+                                                portConfig.DataBits, 
+                                                portConfig.StopBitsEnum);
 
                     return serialPort;
                 }
@@ -287,7 +287,7 @@ namespace iotedgeSerial
 
             Log.Information($"[debug] port created");
 
-            if (portConfig.direction == "Read")
+            if (portConfig.Direction == "Read")
             {
                 Log.Information($"[debug] start read loop");
 
@@ -296,7 +296,7 @@ namespace iotedgeSerial
                 {
                     var response = ReadResponse(serialPort, portConfig);
 
-                    if (portConfig.ignoreEmptyLines
+                    if (portConfig.IgnoreEmptyLines
                                     && response.Length == 0)
                     {
                         Log.Information($"[debug] ignore empty line");
@@ -305,13 +305,13 @@ namespace iotedgeSerial
 
                     var str = System.Text.Encoding.Default.GetString(response);
 
-                    Log.Information($"Data read from '{portConfig.device}': '{str}'");
+                    Log.Information($"Data read from '{portConfig.Device}': '{str}'");
 
                     var serialMessage = new SerialMessage
                     {
                         Data = str,
                         TimestampUtc = DateTime.UtcNow,
-                        Device = portConfig.device
+                        Device = portConfig.Device
                     };
 
                     var jsonMessage = JsonConvert.SerializeObject(serialMessage);
@@ -326,7 +326,7 @@ namespace iotedgeSerial
                     Log.Information($"Message sent");
 
                     // wait a certain interval
-                    await Task.Delay(portConfig.sleepInterval);
+                    await Task.Delay(portConfig.SleepInterval);
                 }
 
                 Log.Information($"[debug] disposing port {key}");
@@ -356,13 +356,13 @@ namespace iotedgeSerial
                         Log.Information($"[debug] BroadcastEvent message converted");
 
                         byte[] valueBytes = Encoding.UTF8.GetBytes(serialCommand.Value);
-                        byte[] delimiterBytes = Encoding.UTF8.GetBytes(portConfig.delimiter);
+                        byte[] delimiterBytes = Encoding.UTF8.GetBytes(portConfig.Delimiter);
                         byte[] totalBytes = valueBytes.Concat(delimiterBytes).ToArray();
 
                         if (totalBytes.Length > 0)
                         {
                              serialPort.Write(totalBytes, 0, totalBytes.Length);
-                            Log.Information($"Data written to '{portConfig.device}': '{Encoding.UTF8.GetString(totalBytes)}'");
+                            Log.Information($"Data written to '{portConfig.Device}': '{Encoding.UTF8.GetString(totalBytes)}'");
                         }
 
                         Log.Information($"[debug] BroadcastEvent message handled"); 
@@ -371,7 +371,7 @@ namespace iotedgeSerial
 
                 while (_run)
                 {                    
-                    await Task.Delay(portConfig.sleepInterval);
+                    await Task.Delay(portConfig.SleepInterval);
                 };
             }
         }
@@ -409,17 +409,17 @@ namespace iotedgeSerial
 
                 temp.Add(buf[0]);
 
-                if (str[0] != portConfig.delimiter[delimiterIndex])
+                if (str[0] != portConfig.Delimiter[delimiterIndex])
                 {
                     delimiterIndex = 0;
                 }
                 else
                 {
                     delimiterIndex++;
-                    if (delimiterIndex == portConfig.delimiter.Length)
+                    if (delimiterIndex == portConfig.Delimiter.Length)
                     {
-                        temp.RemoveRange(temp.Count - portConfig.delimiter.Length,
-                                        portConfig.delimiter.Length);
+                        temp.RemoveRange(temp.Count - portConfig.Delimiter.Length,
+                                        portConfig.Delimiter.Length);
                         break;
                     }
                 }
@@ -429,7 +429,7 @@ namespace iotedgeSerial
 
             if (bytesRead == 1024)
             {
-                Log.Warning($"Delimiter '{ShowControlCharacters(portConfig.delimiter)}' not found in last 1024 bytes read.");
+                Log.Warning($"Delimiter '{ShowControlCharacters(portConfig.Delimiter)}' not found in last 1024 bytes read.");
                 temp.Clear();
             }
 
@@ -505,7 +505,7 @@ namespace iotedgeSerial
             loggerConfiguration.WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] - {Message}{NewLine}{Exception}");
             loggerConfiguration.Enrich.FromLogContext();
             Log.Logger = loggerConfiguration.CreateLogger();
-            Log.Information($"Initializied logger with log level {logLevel}");
+            Log.Information($"Initialized logger with log level {logLevel}");
         }
     }
 }
