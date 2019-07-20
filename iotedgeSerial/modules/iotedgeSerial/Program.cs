@@ -16,6 +16,8 @@ namespace iotedgeSerial
     class Program
     {
         static bool _run = true;  
+
+        private static int _maxBytesToRead = 1024;
     
         static List<Task> _taskList = new List<Task>(); 
 
@@ -78,15 +80,14 @@ namespace iotedgeSerial
             {
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Console.WriteLine(); // todo
-                    Console.WriteLine("Error when initializing module: {0}", exception); //todo
+                    Log.Error($"Error when initializing module: {exception}");
                 }
             }
         }
 
         static async Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
-            Log.Information("[debug] OnDesiredPropertiesUpdate started");
+            Log.Debug("OnDesiredPropertiesUpdate started");
 
             var ioTHubModuleClient = userContext as ModuleClient;
 
@@ -103,26 +104,28 @@ namespace iotedgeSerial
                     DummyMethodCallBack, 
                     null);
 
-                Log.Information("[debug] dummies attached");
+                Log.Debug("dummies attached");
 
                 _run = false;
                 await Task.WhenAll(_taskList); // wait until all tasks are completed
 
-                Log.Information("[debug] Waited for all tasks to complete");
+                Log.Debug("Waited for all tasks to complete");
 
                 _taskList.Clear();
                 _run = true;
 
-                Log.Information("[debug] list cleared");
+                Log.Debug("list cleared");
 
                 // start new activities with new set of desired properties
                 await SetupNewTasks(desiredProperties, ioTHubModuleClient);
 
+                // assign input message handler again
                 await ioTHubModuleClient.SetInputMessageHandlerAsync(
                     "serialInput",
                     SerialMessageCallBack,
                     null);
 
+                // assign direct method handler again
                 await ioTHubModuleClient.SetMethodHandlerAsync(
                     "serialWrite", 
                     SerialWriteMethodCallBack, 
@@ -146,21 +149,21 @@ namespace iotedgeSerial
 
         static async Task<MessageResponse> DummyMessageCallBack(Message message, object userContext)
         {
-            Log.Information("[debug] executing DummyMessageCallBack");
+            Log.Debug("executing DummyMessageCallBack");
             await Task.Delay(TimeSpan.FromSeconds(0));
             return MessageResponse.Abandoned;
         }
         
         static async Task<MethodResponse> DummyMethodCallBack(MethodRequest methodRequest, object userContext)
         {
-            Log.Information("[debug] executing DummyMethodCallBack");
+            Log.Debug("executing DummyMethodCallBack");
             await Task.Delay(TimeSpan.FromSeconds(0));
             return new MethodResponse(501);
         }
 
         static async Task<MessageResponse> SerialMessageCallBack(Message message, object userContext)
         {
-            Log.Information("[debug] executing SerialMessageCallBack");
+            Log.Debug("executing SerialMessageCallBack");
             _serialMessageBroadcaster.BroadcastMessage("bla", null);  // TODO: How to compose port name nad byte[] from message? 
             await Task.Delay(TimeSpan.FromSeconds(0));
             return MessageResponse.Completed;
@@ -168,7 +171,7 @@ namespace iotedgeSerial
 
         static async Task<MethodResponse> SerialWriteMethodCallBack(MethodRequest methodRequest, object userContext)
         {
-            Log.Information("[debug] executing SerialWriteMethodCallBack");
+            Log.Debug("executing SerialWriteMethodCallBack");
             _serialMessageBroadcaster.BroadcastMessage("bla", null); // TODO: How to compose port name nad byte[] from message?
             await Task.Delay(TimeSpan.FromSeconds(0));
             return new MethodResponse(200);
@@ -190,14 +193,14 @@ namespace iotedgeSerial
             
                 //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
 
-                Log.Information("[debug] new desired twins are loaded into memory");
+                Log.Debug("new desired twins are loaded into memory");
 
                 foreach(var dict in moduleConfig.PortConfigs)
                 {
                     var key = dict.Key;
                     var portConfig = dict.Value;
 
-                    Log.Information($"[debug] adding task {key}");
+                    Log.Debug($" adding task '{key}'");
 
                     var t = Task.Run(async () =>
                     {
@@ -210,7 +213,7 @@ namespace iotedgeSerial
 
                     _taskList.Add(t);
 
-                    Log.Information($"[debug] task {key} added ({_taskList.Count} tasks loaded)");
+                    Log.Debug($" task '{key}' added ({_taskList.Count} tasks loaded)");
                 }
 
                 // report back received properties
@@ -280,16 +283,16 @@ namespace iotedgeSerial
 
         private static async Task SerialTaskBody(string key, PortConfig portConfig, ModuleClient client, SerialMessageBroadcaster serialMessageBroadcaster)
         {
-            Log.Information($"[debug] creating port");
+            Log.Debug($" creating port");
 
             // create serial port
             var serialPort = InitSerialPort(portConfig);
 
-            Log.Information($"[debug] port created");
+            Log.Debug($" port created");
 
             if (portConfig.Direction == "Read")
             {
-                Log.Information($"[debug] start read loop");
+                Log.Debug($" start read loop");
 
                 // Looping infinitely until desired properties are updated.
                 while (_run)
@@ -299,7 +302,7 @@ namespace iotedgeSerial
                     if (portConfig.IgnoreEmptyLines
                                     && response.Length == 0)
                     {
-                        Log.Information($"[debug] ignore empty line");
+                        Log.Debug($" ignore empty line");
                         continue;
                     }
 
@@ -329,22 +332,22 @@ namespace iotedgeSerial
                     await Task.Delay(portConfig.SleepInterval);
                 }
 
-                Log.Information($"[debug] disposing port {key}");
+                Log.Debug($"Disposing port '{key}'");
 
                 // Ingest stopped. Tear down port
                 DisposeSerialPort(serialPort);
 
-                Log.Information($"[debug] disposed port {key}");
+                Log.Debug($"Disposed port '{key}'");
             }
             else
             {
                 serialMessageBroadcaster.BroadcastEvent += (sender, se) => 
                 {
-                    Log.Information($"[debug] executing BroadcastEvent for port {se.Device}");
+                    Log.Debug($"Executing BroadcastEvent for port '{se.Device}'");
 
                     if (se.Device == key)
                     {
-                        Log.Information($"[debug] BroadcastEvent is picked up");
+                        Log.Debug($"BroadcastEvent has been picked up");
 
                         // TODO: fix mismatch between incoming message and handling here!!!!
 
@@ -353,7 +356,7 @@ namespace iotedgeSerial
                         var jsonMessage = System.Text.Encoding.UTF8.GetString(messageBytes);
                         var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(jsonMessage, typeof(SerialCommand));
 
-                        Log.Information($"[debug] BroadcastEvent message converted");
+                        Log.Debug($"BroadcastEvent message converted");
 
                         byte[] valueBytes = Encoding.UTF8.GetBytes(serialCommand.Value);
                         byte[] delimiterBytes = Encoding.UTF8.GetBytes(portConfig.Delimiter);
@@ -365,7 +368,7 @@ namespace iotedgeSerial
                             Log.Information($"Data written to '{portConfig.Device}': '{Encoding.UTF8.GetString(totalBytes)}'");
                         }
 
-                        Log.Information($"[debug] BroadcastEvent message handled"); 
+                        Log.Debug($"BroadcastEvent message handled"); 
                     }
                 };
 
@@ -427,9 +430,9 @@ namespace iotedgeSerial
                 bytesRead++;
             }
 
-            if (bytesRead == 1024)
+            if (bytesRead == _maxBytesToRead)
             {
-                Log.Warning($"Delimiter '{ShowControlCharacters(portConfig.Delimiter)}' not found in last 1024 bytes read.");
+                Log.Warning($"Delimiter '{ShowControlCharacters(portConfig.Delimiter)}' not found in last {_maxBytesToRead} bytes read.");
                 temp.Clear();
             }
 
@@ -476,7 +479,7 @@ namespace iotedgeSerial
             LoggerConfiguration loggerConfiguration = new LoggerConfiguration();
 
             var logLevel = Environment.GetEnvironmentVariable("RuntimeLogLevel");
-            logLevel = !string.IsNullOrEmpty(logLevel) ? logLevel.ToLower() : "verbose";
+            logLevel = !string.IsNullOrEmpty(logLevel) ? logLevel.ToLower() : "info";
 
             // set the log level
             switch (logLevel)
