@@ -28,6 +28,7 @@ namespace iotedgeSerial
         static void Main(string[] args)
         {
             InitLogging();
+            LogLogo();
             Init().Wait();
 
             // Wait until the app unloads or is cancelled
@@ -508,7 +509,25 @@ namespace iotedgeSerial
             loggerConfiguration.WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] - {Message}{NewLine}{Exception}");
             loggerConfiguration.Enrich.FromLogContext();
             Log.Logger = loggerConfiguration.CreateLogger();
+
             Log.Information($"Initialized logger with log level {logLevel}");
+        }
+
+        private static void LogLogo()
+        {
+            Log.Information("      _                         ___      _____   ___     _");
+            Log.Information("     /_\\   ___ _  _  _ _  ___  |_ _| ___|_   _| | __| __| | __ _  ___  ");
+            Log.Information("    / _ \\ |_ /| || || '_|/ -_)  | | / _ \\ | |   | _| / _` |/ _` |/ -_)");
+            Log.Information("   /_/ \\_\\/__| \\_,_||_|  \\___| |___|\\___/ |_|   |___|\\__,_|\\__, |\\___|");
+            Log.Information("                                                           |___/");
+            Log.Information("      ___            _        _   __  __          _        _");
+            Log.Information("     / __| ___  _ _ (_) __ _ | | |  \\/  | ___  __| | _  _ | | ___");
+            Log.Information("     \\__ \\/ -_)| '_|| |/ _` || | | |\\/| |/ _ \\/ _` || || || |/ -_)");
+            Log.Information("     |___/\\___||_|  |_|\\__,_||_| |_|  |_|\\___/\\__,_| \\_,_||_|\\___|");
+            Log.Information(" ");
+            Log.Information("   Copyright 2019 - Jan Willem Groenenberg & Sander van de Velde.");
+            Log.Information(" ");
+            
         }
     }
 }
