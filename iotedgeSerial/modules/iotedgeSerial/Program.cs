@@ -105,7 +105,7 @@ namespace iotedgeSerial
                     DummyMethodCallBack, 
                     null);
 
-                Log.Debug("dummies attached");
+                Log.Debug("Dummies attached");
 
                 _run = false;
                 await Task.WhenAll(_taskList); // wait until all tasks are completed
@@ -115,7 +115,7 @@ namespace iotedgeSerial
                 _taskList.Clear();
                 _run = true;
 
-                Log.Debug("list cleared");
+                Log.Debug("List cleared");
 
                 // start new activities with new set of desired properties
                 await SetupNewTasks(desiredProperties, ioTHubModuleClient);
@@ -137,34 +137,32 @@ namespace iotedgeSerial
             {
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("Error when receiving desired property: {0}", exception);
+                    Log.Error($"Error when receiving desired property: {exception}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine();
-                Console.WriteLine("Error when receiving desired property: {0}", ex.Message);
+                Log.Error($"Error when receiving desired property: {ex.Message}");
             }
         }
 
         static async Task<MessageResponse> DummyMessageCallBack(Message message, object userContext)
         {
-            Log.Debug("executing DummyMessageCallBack");
+            Log.Debug("Executing DummyMessageCallBack");
             await Task.Delay(TimeSpan.FromSeconds(0));
             return MessageResponse.Abandoned;
         }
         
         static async Task<MethodResponse> DummyMethodCallBack(MethodRequest methodRequest, object userContext)
         {
-            Log.Debug("executing DummyMethodCallBack");
+            Log.Debug("Executing DummyMethodCallBack");
             await Task.Delay(TimeSpan.FromSeconds(0));
             return new MethodResponse(501);
         }
 
         static async Task<MessageResponse> SerialMessageCallBack(Message message, object userContext)
         {
-            Log.Debug("executing SerialMessageCallBack");
+            Log.Debug("Executing SerialMessageCallBack");
             _serialMessageBroadcaster.BroadcastMessage("bla", null);  // TODO: How to compose port name nad byte[] from message? 
             await Task.Delay(TimeSpan.FromSeconds(0));
             return MessageResponse.Completed;
@@ -172,7 +170,7 @@ namespace iotedgeSerial
 
         static async Task<MethodResponse> SerialWriteMethodCallBack(MethodRequest methodRequest, object userContext)
         {
-            Log.Debug("executing SerialWriteMethodCallBack");
+            Log.Debug("Executing SerialWriteMethodCallBack");
             _serialMessageBroadcaster.BroadcastMessage("bla", null); // TODO: How to compose port name nad byte[] from message?
             await Task.Delay(TimeSpan.FromSeconds(0));
             return new MethodResponse(200);
@@ -186,7 +184,7 @@ namespace iotedgeSerial
             {
                 var  serializedStr = JsonConvert.SerializeObject(desiredProperties);
 
-                Log.Information($"Desired property change: {serializedStr}");
+                Log.Verbose($"Desired property change: {serializedStr}");
 
                 ModuleConfig moduleConfig = JsonConvert.DeserializeObject<ModuleConfig>(serializedStr);
 
@@ -194,14 +192,14 @@ namespace iotedgeSerial
             
                 //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
 
-                Log.Debug("new desired twins are loaded into memory");
+                Log.Debug("New desired twins are loaded into memory");
 
                 foreach(var dict in moduleConfig.PortConfigs)
                 {
                     var key = dict.Key;
                     var portConfig = dict.Value;
 
-                    Log.Debug($" adding task '{key}'");
+                    Log.Debug($"Adding task '{key}'");
 
                     var t = Task.Run(async () =>
                     {
@@ -214,7 +212,7 @@ namespace iotedgeSerial
 
                     _taskList.Add(t);
 
-                    Log.Debug($" task '{key}' added ({_taskList.Count} tasks loaded)");
+                    Log.Debug($"Task '{key}' added ({_taskList.Count} tasks loaded)");
                 }
 
                 // report back received properties
