@@ -566,7 +566,6 @@ namespace iotedgeSerial
             Log.Information(" ");
             Log.Information("   Copyright 2019 - Jan Willem Groenenberg & Sander van de Velde.");
             Log.Information(" ");
-            
         }
     }
 }
