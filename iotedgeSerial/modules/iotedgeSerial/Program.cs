@@ -200,7 +200,7 @@ namespace iotedgeSerial
         /// </summary>
         private static async Task SetupNewTasks(TwinCollection desiredProperties, ModuleClient client)
         {
-            Log.Information("Changing desired properties");
+            Log.Debug("Changing desired properties");
 
             try
             {
@@ -241,6 +241,8 @@ namespace iotedgeSerial
                 string reportedPropertiesJson = JsonConvert.SerializeObject(moduleConfig);
                 var reportedProperties = new TwinCollection(reportedPropertiesJson);
                 await client.UpdateReportedPropertiesAsync(reportedProperties);
+
+                Log.Debug("Desired properties set");
             }
             catch (AggregateException ex)
             {
