@@ -69,16 +69,18 @@ namespace iotedgeSerial
                 //ioTHubModuleClient.ProductInfo = "...";
 
                 await _ioTHubModuleClient.OpenAsync();
-                Log.Information($"IoT Hub module client initialized.");
-                Log.Information($"Initializing module {Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}");
-                Log.Information($".Net version in use: {Environment.GetEnvironmentVariable("DOTNET_VERSION")}");
-
+                Log.Information($"IoT Hub module client initialized");
+                
                 // Execute callback method for Twin desired properties updates
                 var twin = await _ioTHubModuleClient.GetTwinAsync();
                 await OnDesiredPropertiesUpdate(twin.Properties.Desired, _ioTHubModuleClient);
 
                 // Attach a callback for updates to the module twin's desired properties.
                 await _ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, _ioTHubModuleClient);
+
+                Log.Information($"Module '{Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}' initialized");
+                Log.Information($".Net version '{Environment.GetEnvironmentVariable("DOTNET_VERSION")}' in use");
+
             }
             catch (AggregateException ex)
             {
