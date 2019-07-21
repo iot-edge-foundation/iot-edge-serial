@@ -112,6 +112,8 @@ Meaning of each field:
 
 If the delimiter is not recognized in time in the input stream, the input will be ignored every 1024 bytes and  a warning message is logged. This exception is treated as an empty line.
 
+For more about RS232, please refer to the [Wiki](https://en.wikipedia.org/wiki/RS-232) link.
+
 ## Module Endpoints and Routing
 
 There are multiple endpoints defined in Serial module:
