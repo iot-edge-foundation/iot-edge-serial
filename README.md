@@ -114,10 +114,10 @@ If the delimiter is not recognized in time in the input stream, the input will b
 
 ## Module Endpoints and Routing
 
-There are two endpoints defined in Serial module:
+There are multiple endpoints defined in Serial module:
 
-- "serialOutput": This is a output endpoint for telemetries. All read operations defined in configuration will be composed as telemetry messages output to this endpoint.
-- "serialInput": This is an input endpoint for write commands.
+- "&lt;name defined in portConfigs&gt;": This is a output endpoint for telemetries per configured port. The read operation defined in the direction field of the named port in configuration will be composed as telemetry messages output to this endpoint.
+- "serialInput": This is an input endpoint for write commands for all named ports.
 
 Input/Output message format and Routing rules are introduced below.
 
