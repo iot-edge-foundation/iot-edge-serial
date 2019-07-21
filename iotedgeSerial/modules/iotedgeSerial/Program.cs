@@ -79,7 +79,7 @@ namespace iotedgeSerial
                 await _ioTHubModuleClient.SetDesiredPropertyUpdateCallbackAsync(OnDesiredPropertiesUpdate, _ioTHubModuleClient);
 
                 Log.Information($"Module '{Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}' initialized");
-                Log.Information($".Net version '{Environment.GetEnvironmentVariable("DOTNET_VERSION")}' in use");
+                Log.Information($".Net framework version '{Environment.GetEnvironmentVariable("DOTNET_VERSION")}' in use");
 
             }
             catch (AggregateException ex)
@@ -132,17 +132,19 @@ namespace iotedgeSerial
                 await ioTHubModuleClient.SetInputMessageHandlerAsync(
                     "serialInput",
                     SerialMessageCallBack,
-                    null);
+                    ioTHubModuleClient);
 
                 // assign direct method handler again
                 await ioTHubModuleClient.SetMethodHandlerAsync(
                     "serialWrite",
                     SerialWriteMethodCallBack,
-                    null);
+                    ioTHubModuleClient);
 
             }
             catch (AggregateException ex)
             {
+                Log.Error($"Desired properties change error: {ex}");
+                
                 foreach (Exception exception in ex.InnerExceptions)
                 {
                     Log.Error($"Error when receiving desired property: {exception}");
@@ -180,8 +182,16 @@ namespace iotedgeSerial
         static async Task<MessageResponse> SerialMessageCallBack(Message message, object userContext)
         {
             Log.Debug("Executing SerialMessageCallBack");
-            _serialMessageBroadcaster.BroadcastMessage("bla", null);  // TODO: How to compose port name nad byte[] from message? 
+            
+            var messageBytes = message.GetBytes();
+            var messageJson = Encoding.UTF8.GetString(messageBytes);
+            var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(messageJson, typeof(SerialCommand));
+            
+            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Device, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value));  // TODO: How to compose port name nad byte[] from message? 
             await Task.Delay(TimeSpan.FromSeconds(0));
+
+            Log.Debug($"Serial command '{serialCommand.Value}' for serial port '{serialCommand.Device}' broadcasted");
+            
             return MessageResponse.Completed;
         }
 
@@ -191,6 +201,7 @@ namespace iotedgeSerial
         static async Task<MethodResponse> SerialWriteMethodCallBack(MethodRequest methodRequest, object userContext)
         {
             Log.Debug("Executing SerialWriteMethodCallBack");
+            
             _serialMessageBroadcaster.BroadcastMessage("bla", null); // TODO: How to compose port name nad byte[] from message?
             await Task.Delay(TimeSpan.FromSeconds(0));
             return new MethodResponse(200);
@@ -228,10 +239,6 @@ namespace iotedgeSerial
                     var t = Task.Run(async () =>
                     {
                         await SerialTaskBody(key, portConfig, client, _serialMessageBroadcaster);
-
-                        // ik moet hier binnen de TASK een stukje code kunnen uitvoeren (schrijven naar poort)
-                        // indien er buiten de task een input messagre arriveert
-                        // graag alleen uitvoeren voor die ene poort
                     });
 
                     _taskList.Add(t);
@@ -367,33 +374,28 @@ namespace iotedgeSerial
 
                 Log.Debug($"Disposed port '{key}'");
             }
-            else
+            else if(portConfig.Direction == "Write")
             {
+                Log.Debug("Let's write to serial");
+
                 serialMessageBroadcaster.BroadcastEvent += (sender, se) =>
-                {
+                { 
                     Log.Debug($"Executing BroadcastEvent for port '{se.Device}'");
 
                     if (se.Device == key)
                     {
                         Log.Debug($"BroadcastEvent has been picked up");
 
-                        // TODO: fix mismatch between incoming message and handling here!!!!
-
-                        byte[] messageBytes = se.Message;
-
-                        var jsonMessage = System.Text.Encoding.UTF8.GetString(messageBytes);
-                        var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(jsonMessage, typeof(SerialCommand));
-
-                        Log.Debug($"BroadcastEvent message converted");
-
-                        byte[] valueBytes = Encoding.UTF8.GetBytes(serialCommand.Value);
+                        byte[] valueBytes = se.Message;
                         byte[] delimiterBytes = Encoding.UTF8.GetBytes(portConfig.Delimiter);
                         byte[] totalBytes = valueBytes.Concat(delimiterBytes).ToArray();
+
+                        Log.Debug($"BroadcastEvent message converted");
 
                         if (totalBytes.Length > 0)
                         {
                             serialPort.Write(totalBytes, 0, totalBytes.Length);
-                            Log.Information($"Written to '{portConfig.Device}': '{Encoding.UTF8.GetString(totalBytes)}'");
+                            Log.Information($"Written to '{se.Device}': '{ShowControlCharacters(Encoding.UTF8.GetString(totalBytes))}'");
                         }
 
                         Log.Debug($"BroadcastEvent message handled");
