@@ -15,11 +15,11 @@ namespace iotedgeSerial
 {
     class Program
     {
-        static bool _run = true;  
+        static bool _run = true;
 
         private static int _maxBytesToRead = 1024;
-    
-        static List<Task> _taskList = new List<Task>(); 
+
+        static List<Task> _taskList = new List<Task>();
 
         private static ModuleClient _ioTHubModuleClient = null;
 
@@ -70,7 +70,7 @@ namespace iotedgeSerial
 
                 await _ioTHubModuleClient.OpenAsync();
                 Log.Information($"IoT Hub module client initialized");
-                
+
                 // Execute callback method for Twin desired properties updates
                 var twin = await _ioTHubModuleClient.GetTwinAsync();
                 await OnDesiredPropertiesUpdate(twin.Properties.Desired, _ioTHubModuleClient);
@@ -109,8 +109,8 @@ namespace iotedgeSerial
                     null);
 
                 await ioTHubModuleClient.SetMethodHandlerAsync(
-                    "serialWrite", 
-                    DummyMethodCallBack, 
+                    "serialWrite",
+                    DummyMethodCallBack,
                     null);
 
                 Log.Debug("Dummies attached");
@@ -136,8 +136,8 @@ namespace iotedgeSerial
 
                 // assign direct method handler again
                 await ioTHubModuleClient.SetMethodHandlerAsync(
-                    "serialWrite", 
-                    SerialWriteMethodCallBack, 
+                    "serialWrite",
+                    SerialWriteMethodCallBack,
                     null);
 
             }
@@ -163,7 +163,7 @@ namespace iotedgeSerial
             await Task.Delay(TimeSpan.FromSeconds(0));
             return MessageResponse.Abandoned;
         }
-        
+
         /// <summary>
         /// Dummy call back function to abanon incoming direct method requests during a desired properties update 
         /// </summary>
@@ -206,19 +206,19 @@ namespace iotedgeSerial
 
             try
             {
-                var  serializedStr = JsonConvert.SerializeObject(desiredProperties);
+                var serializedStr = JsonConvert.SerializeObject(desiredProperties);
 
                 Log.Verbose($"Desired property change: {serializedStr}");
 
                 ModuleConfig moduleConfig = JsonConvert.DeserializeObject<ModuleConfig>(serializedStr);
 
                 moduleConfig.Validate();
-            
+
                 //// After setting all desired properties, we initialize and start 'read' and 'write' ports again
 
                 Log.Debug("New desired twins are loaded into memory");
 
-                foreach(var dict in moduleConfig.PortConfigs)
+                foreach (var dict in moduleConfig.PortConfigs)
                 {
                     var key = dict.Key;
                     var portConfig = dict.Value;
@@ -258,24 +258,24 @@ namespace iotedgeSerial
                 Log.Error($"Error when receiving desired property: {0}", ex.Message);
             }
         }
-        
+
         /// <summary>
         /// Initialization of the serial port based on the port configuration
         /// </summary>
         private static ISerialDevice InitSerialPort(PortConfig portConfig)
-        {            
-            if (portConfig.Device.Substring(0, 3) == "COM" 
-                    || portConfig.Device.Substring(0, 8) == "/dev/tty" 
+        {
+            if (portConfig.Device.Substring(0, 3) == "COM"
+                    || portConfig.Device.Substring(0, 8) == "/dev/tty"
                     || portConfig.Device.Substring(0, 11) == "/dev/rfcomm")
             {
                 try
                 {
                     Log.Debug($"Opening port '{portConfig.Device}' for '{portConfig.Direction}'");
 
-                    var serialPort = OpenSerial(portConfig.Device, 
-                                                portConfig.BaudRate, 
-                                                portConfig.ParityEnum, 
-                                                portConfig.DataBits, 
+                    var serialPort = OpenSerial(portConfig.Device,
+                                                portConfig.BaudRate,
+                                                portConfig.ParityEnum,
+                                                portConfig.DataBits,
                                                 portConfig.StopBitsEnum,
                                                 portConfig.Direction);
 
@@ -289,7 +289,7 @@ namespace iotedgeSerial
 
             return null;
         }
-        
+
         /// <summary>
         /// Disposing a serial port in case of updating desired properties
         /// </summary>
@@ -369,7 +369,7 @@ namespace iotedgeSerial
             }
             else
             {
-                serialMessageBroadcaster.BroadcastEvent += (sender, se) => 
+                serialMessageBroadcaster.BroadcastEvent += (sender, se) =>
                 {
                     Log.Debug($"Executing BroadcastEvent for port '{se.Device}'");
 
@@ -392,16 +392,16 @@ namespace iotedgeSerial
 
                         if (totalBytes.Length > 0)
                         {
-                             serialPort.Write(totalBytes, 0, totalBytes.Length);
+                            serialPort.Write(totalBytes, 0, totalBytes.Length);
                             Log.Information($"Written to '{portConfig.Device}': '{Encoding.UTF8.GetString(totalBytes)}'");
                         }
 
-                        Log.Debug($"BroadcastEvent message handled"); 
+                        Log.Debug($"BroadcastEvent message handled");
                     }
                 };
 
                 while (_run)
-                {                    
+                {
                     await Task.Delay(portConfig.SleepInterval);
                 };
             }
@@ -415,10 +415,10 @@ namespace iotedgeSerial
         {
             ISerialDevice serialDevice = SerialDeviceFactory.CreateSerialDevice(connection, baudRate, parity, dataBits, stopBits);
             serialDevice.Open();
-            
+
             Log.Information($"Serial port '{connection}' opened for '{direction}'");
 
-            return serialDevice;            
+            return serialDevice;
         }
 
         /// <summary>
@@ -564,7 +564,7 @@ namespace iotedgeSerial
             Log.Information("     \\__ \\/ -_)| '_|| |/ _` || | | |\\/| |/ _ \\/ _` || || || |/ -_)");
             Log.Information("     |___/\\___||_|  |_|\\__,_||_| |_|  |_|\\___/\\__,_| \\_,_||_|\\___|");
             Log.Information(" ");
-            Log.Information("   Copyright 2019 - Jan Willem Groenenberg & Sander van de Velde.");
+            Log.Information("   Copyright © 2019 - Jan Willem Groenenberg & Sander van de Velde.");
             Log.Information(" ");
         }
     }

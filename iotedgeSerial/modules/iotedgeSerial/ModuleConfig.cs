@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+
 namespace iotedgeSerial
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO.Ports;
-
     public class ModuleConfig
     {
-        public Dictionary<string, PortConfig> PortConfigs {get; private set;}
+        public Dictionary<string, PortConfig> PortConfigs { get; private set; }
 
         public ModuleConfig(Dictionary<string, PortConfig> portConfigs)
         {
@@ -15,14 +15,14 @@ namespace iotedgeSerial
 
         private const string DefaultDirection = "Read";
         private const string DefaultDevice = "/dev/ttyS0";
-       
-        private const int DefaultSleepInterval  = 10;
+
+        private const int DefaultSleepInterval = 10;
         private const int DefaultBaudRate = 9600;
         private const string DefaultParity = "None";
-        private const int DefaultDataBits =  8;
+        private const int DefaultDataBits = 8;
         private const string DefaultStopBits = "One";
-        private const string DefaultDelimiter =  "\r\n";
-        private const bool DefaultIgnoreEmptyLines  = true;
+        private const string DefaultDelimiter = "\r\n";
+        private const bool DefaultIgnoreEmptyLines = true;
 
         public void Validate()
         {
@@ -33,7 +33,7 @@ namespace iotedgeSerial
 
                 var key = config_pair.Key;
 
-                if(portConfig == null)
+                if (portConfig == null)
                 {
                     Console.WriteLine($"{key} configuration is null, remove from dictionary...");
                     invalidConfigs.Add(key);
@@ -125,7 +125,7 @@ namespace iotedgeSerial
                 }
             }
 
-            foreach(var in_slave in invalidConfigs)
+            foreach (var in_slave in invalidConfigs)
             {
                 PortConfigs.Remove(in_slave);
             }

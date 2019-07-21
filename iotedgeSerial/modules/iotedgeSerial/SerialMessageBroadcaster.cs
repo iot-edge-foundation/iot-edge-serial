@@ -1,8 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+
 namespace iotedgeSerial
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO.Ports;
 
     public class SerialMessageBroadcaster
     {
@@ -10,10 +11,10 @@ namespace iotedgeSerial
         {
             if (BroadcastEvent != null)
             {
-                BroadcastEvent(this, new SerialEventArgs{Device = device, Message = message});
+                BroadcastEvent(this, new SerialEventArgs { Device = device, Message = message });
             }
         }
 
-        public event EventHandler<SerialEventArgs> BroadcastEvent; 
+        public event EventHandler<SerialEventArgs> BroadcastEvent;
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace iotedgeSerial
 {
@@ -112,7 +111,7 @@ namespace iotedgeSerial
     public class UnixSerialDevice : ISerialDevice
     {
         public const int READING_BUFFER_SIZE = 1024;
-            
+
         private readonly CancellationTokenSource cts = new CancellationTokenSource();
         private CancellationToken CancellationToken => cts.Token;
         private int? fd;
@@ -144,14 +143,14 @@ namespace iotedgeSerial
         {
             // open serial port
             int fd = ComWrapper.com_open(portName);
-            
+
             if (fd == -1)
             {
                 throw new Exception($"failed to open port ({portName})");
             }
-            
+
             ComWrapper.com_set_interface_attribs(fd, baudRate, dataBits, (int)parity, (int)stopBits);
-            
+
             // start reading
             //Task.Run((Action)StartReading, CancellationToken);
 
@@ -173,7 +172,7 @@ namespace iotedgeSerial
             {
                 throw new Exception();
             }
-            
+
             while (true)
             {
                 CancellationToken.ThrowIfCancellationRequested();
@@ -194,7 +193,7 @@ namespace iotedgeSerial
         {
             DataReceived?.Invoke(this, data);
         }
-        
+
         public void Close()
         {
             if (!fd.HasValue)
@@ -205,7 +204,7 @@ namespace iotedgeSerial
             ComWrapper.com_close(fd.Value);
             Marshal.FreeHGlobal(readingBuffer);
         }
-        
+
         public void Write(byte[] buf, int offset, int len)
         {
             if (!fd.HasValue)
@@ -224,7 +223,7 @@ namespace iotedgeSerial
             {
                 throw new Exception();
             }
-            
+
             int res = ComWrapper.com_read(fd.Value, readingBuffer, len);
             if (res != -1)
             {
@@ -234,7 +233,7 @@ namespace iotedgeSerial
             {
                 throw new Exception();
             }
-            
+
             return res;
         }
 

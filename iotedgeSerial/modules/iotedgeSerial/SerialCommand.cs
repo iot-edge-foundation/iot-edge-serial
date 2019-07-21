@@ -1,13 +1,13 @@
-using System;
 using Newtonsoft.Json;
 
-namespace iotedgeSerial {
+namespace iotedgeSerial
+{
     public class SerialCommand
     {
-         [JsonProperty("device")]
+        [JsonProperty("device")]
         public string Device { get; set; }
-         
-         [JsonProperty("value")]
+
+        [JsonProperty("value")]
         public string Value { get; set; } // TODO: byte[] or string????
     }
 }
