@@ -125,9 +125,9 @@ namespace iotedgeSerial
                 }
             }
 
-            foreach (var in_slave in invalidConfigs)
+            foreach (var invalidPort in invalidConfigs)
             {
-                PortConfigs.Remove(in_slave);
+                PortConfigs.Remove(invalidPort);
             }
         }
     }
