@@ -543,7 +543,7 @@ namespace iotedgeSerial
             loggerConfiguration.Enrich.FromLogContext();
             Log.Logger = loggerConfiguration.CreateLogger();
 
-            Log.Information($"Initialized logger with log level '{logLevel}'");
+            Log.Information($"Logger initialized with log level '{logLevel}'");
         }
 
 
