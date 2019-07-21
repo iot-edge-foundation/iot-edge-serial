@@ -36,7 +36,7 @@ Find more information about Azure IoT Edge at [here](https://docs.microsoft.com/
 
 Azure IoT Edge is designed to be used with a broad range of operating system platforms. Serial module has been tested on the following platforms:
 
-- ~~Windows 10 IoT Enterprise (version 1809) x64
+- Windows 10 IoT Enterprise (version 1809) x64
 - ~~Windows 10 IoT Core (version 1809) x64~~
 - Linux x64
 - ~~Linux arm32v7~~
