@@ -25,6 +25,9 @@ namespace iotedgeSerial
 
         private static SerialMessageBroadcaster _serialMessageBroadcaster = new SerialMessageBroadcaster();
 
+        /// <summary>
+        /// Program Main() method to start it all
+        /// </summary>
         static void Main(string[] args)
         {
             InitLogging();
@@ -86,6 +89,9 @@ namespace iotedgeSerial
             }
         }
 
+        /// <summary>
+        /// Call back function for updating the desired properties
+        /// </summary>
         static async Task OnDesiredPropertiesUpdate(TwinCollection desiredProperties, object userContext)
         {
             Log.Debug("OnDesiredPropertiesUpdate started");
@@ -146,6 +152,9 @@ namespace iotedgeSerial
             }
         }
 
+        /// <summary>
+        /// Dummy call back function to abandon messages during a desired properties update
+        /// </summary>
         static async Task<MessageResponse> DummyMessageCallBack(Message message, object userContext)
         {
             Log.Debug("Executing DummyMessageCallBack");
@@ -153,6 +162,9 @@ namespace iotedgeSerial
             return MessageResponse.Abandoned;
         }
         
+        /// <summary>
+        /// Dummy call back function to abanon incoming direct method requests during a desired properties update 
+        /// </summary>
         static async Task<MethodResponse> DummyMethodCallBack(MethodRequest methodRequest, object userContext)
         {
             Log.Debug("Executing DummyMethodCallBack");
@@ -160,6 +172,9 @@ namespace iotedgeSerial
             return new MethodResponse(501);
         }
 
+        /// <summary>
+        /// Call back function for handling incoming messages to be written to a serial port
+        /// </summary>
         static async Task<MessageResponse> SerialMessageCallBack(Message message, object userContext)
         {
             Log.Debug("Executing SerialMessageCallBack");
@@ -168,6 +183,9 @@ namespace iotedgeSerial
             return MessageResponse.Completed;
         }
 
+        /// <summary>
+        /// Call back function for handling incoming direct method requests to be written to a serial port
+        /// </summary>
         static async Task<MethodResponse> SerialWriteMethodCallBack(MethodRequest methodRequest, object userContext)
         {
             Log.Debug("Executing SerialWriteMethodCallBack");
@@ -176,6 +194,10 @@ namespace iotedgeSerial
             return new MethodResponse(200);
         }
 
+
+        /// <summary>
+        /// Creating new task per port with updated desired properties
+        /// </summary>
         private static async Task SetupNewTasks(TwinCollection desiredProperties, ModuleClient client)
         {
             Log.Information("Changing desired properties");
@@ -232,7 +254,10 @@ namespace iotedgeSerial
                 Log.Error($"Error when receiving desired property: {0}", ex.Message);
             }
         }
-
+        
+        /// <summary>
+        /// Initialization of the serial port based on the port configuration
+        /// </summary>
         private static ISerialDevice InitSerialPort(PortConfig portConfig)
         {            
             if (portConfig.Device.Substring(0, 3) == "COM" 
@@ -260,7 +285,10 @@ namespace iotedgeSerial
 
             return null;
         }
-
+        
+        /// <summary>
+        /// Disposing a serial port in case of updating desired properties
+        /// </summary>
         private static void DisposeSerialPort(ISerialDevice serialPort)
         {
             if (serialPort != null)
@@ -273,6 +301,10 @@ namespace iotedgeSerial
             Log.Debug("No serial port to dispose");
         }
 
+
+        /// <summary>
+        /// Execution method for a 'Read' or 'Write' task per port.
+        /// </summary>
         private static async Task SerialTaskBody(string key, PortConfig portConfig, ModuleClient client, SerialMessageBroadcaster serialMessageBroadcaster)
         {
             Log.Debug($"Creating port");
@@ -371,6 +403,10 @@ namespace iotedgeSerial
             }
         }
 
+
+        /// <summary>
+        /// Open the initialized serial port
+        /// </summary>
         private static ISerialDevice OpenSerial(string connection, int baudRate, Parity parity, int dataBits, StopBits stopBits, string direction)
         {
             ISerialDevice serialDevice = SerialDeviceFactory.CreateSerialDevice(connection, baudRate, parity, dataBits, stopBits);
@@ -381,6 +417,9 @@ namespace iotedgeSerial
             return serialDevice;            
         }
 
+        /// <summary>
+        /// Read the byte[] response from a serial port
+        /// </summary>
         private static byte[] ReadResponse(ISerialDevice serialPort, PortConfig portConfig)
         {
             int bytesRead = 0;
@@ -441,7 +480,7 @@ namespace iotedgeSerial
         }
 
         /// <summary>
-        /// comtrol characters are shown in plain text
+        /// Control characters are shown in plain text
         /// </summary>
         private static string ShowControlCharacters(string characters)
         {
@@ -505,6 +544,10 @@ namespace iotedgeSerial
             Log.Information($"Initialized logger with log level '{logLevel}'");
         }
 
+
+        /// <summary>
+        /// Log Module logo in ascii art.
+        /// </summary>
         private static void LogLogo()
         {
             Log.Information("      _                         ___      _____   ___     _");
