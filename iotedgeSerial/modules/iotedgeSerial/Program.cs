@@ -231,19 +231,19 @@ namespace iotedgeSerial
 
                 foreach (var dict in moduleConfig.PortConfigs)
                 {
-                    var key = dict.Key;
+                    var port = dict.Key;
                     var portConfig = dict.Value;
 
-                    Log.Debug($"Adding task '{key}'");
+                    Log.Debug($"Adding task '{port}'");
 
                     var t = Task.Run(async () =>
                     {
-                        await SerialTaskBody(key, portConfig, client, _serialMessageBroadcaster);
+                        await SerialTaskBody(port, portConfig, client, _serialMessageBroadcaster);
                     });
 
                     _taskList.Add(t);
 
-                    Log.Debug($"Task '{key}' added ({_taskList.Count} tasks loaded)");
+                    Log.Debug($"Task '{port}' added ({_taskList.Count} tasks loaded)");
                 }
 
                 // report back received properties
@@ -316,14 +316,14 @@ namespace iotedgeSerial
         /// <summary>
         /// Execution method for a 'Read' or 'Write' task per port.
         /// </summary>
-        private static async Task SerialTaskBody(string key, PortConfig portConfig, ModuleClient client, SerialMessageBroadcaster serialMessageBroadcaster)
+        private static async Task SerialTaskBody(string port, PortConfig portConfig, ModuleClient client, SerialMessageBroadcaster serialMessageBroadcaster)
         {
             Log.Debug($"Creating port");
 
             // create serial port
             var serialPort = InitSerialPort(portConfig);
 
-            Log.Debug($"Port '{key}' created");
+            Log.Debug($"Port '{port}' created");
 
             if (portConfig.Direction == "Read")
             {
@@ -359,7 +359,7 @@ namespace iotedgeSerial
                     var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
                     pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
-                    await client.SendEventAsync(key, pipeMessage);
+                    await client.SendEventAsync(port, pipeMessage);
 
                     Log.Debug($"Message sent");
 
@@ -367,12 +367,12 @@ namespace iotedgeSerial
                     await Task.Delay(portConfig.SleepInterval);
                 }
 
-                Log.Debug($"Disposing port '{key}'");
+                Log.Debug($"Disposing port '{port}'");
 
                 // Ingest stopped. Tear down port
                 DisposeSerialPort(serialPort);
 
-                Log.Debug($"Disposed port '{key}'");
+                Log.Debug($"Disposed port '{port}'");
             }
             else if(portConfig.Direction == "Write")
             {
@@ -382,7 +382,7 @@ namespace iotedgeSerial
                 { 
                     Log.Debug($"Executing BroadcastEvent for port '{se.Device}'");
 
-                    if (se.Device == key)
+                    if (se.Device == port)
                     {
                         Log.Debug($"BroadcastEvent has been picked up");
 
