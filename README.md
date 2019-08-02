@@ -100,15 +100,18 @@ Before running the module, proper configuration is required. Here is a sample co
 ```
 
 Meaning of each field:
+- **portConfigs**: Array of port configurations, size 1 to n
+    - **&lt;named port&gt;**: Named port like 'ttyS0' and 'ttyS1' in the example above
+        - **sleepInterval**: # of miliseconds the thread should sleep as integer
+        - **device**: Device like /dev/tty... as string. (*Note:* Has to resemble the 'PathInContainer' create option)
+        - **baudRate**: # of bauds as integer
+        - **parity**: Partity with possible values: None, One, as string
+        - **dataBits**: # number of data bits as integer
+        - **stopBits**: Stop bits with possible values: as string
+        - **delimiter**: Delimiter to seperate data into messages as string
+        - **ignoreEmptyLines**: Ignore empty lines in data as boolean
 
-- **sleepInterval**: # of miliseconds the thread should sleep as integer
-- **device**: Device like /dev/tty... as string. (*Note:* Has to resemble the 'PathInContainer' create option)
-- **baudRate**: # of bauds as integer
-- **parity**: Partity with possible values: None, One, as string
-- **dataBits**: # number of data bits as integer
-- **stopBits**: Stop bits with possible values: as string
-- **delimiter**: Delimiter to seperate data into messages as string
-- **ignoreEmptyLines**: Ignore empty lines in data as boolean
+Naming convention for named ports is to use the device name as used in the operating system, like 'ttyS0' on Linux or 'COM1' on Windows for the first serial port.
 
 If the delimiter is not recognized in time in the input stream, the input will be ignored every 1024 bytes and  a warning message is logged. This exception is treated as an empty line.
 
