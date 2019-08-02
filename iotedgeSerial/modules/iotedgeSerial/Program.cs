@@ -291,6 +291,7 @@ namespace iotedgeSerial
                 catch (Exception ex)
                 {
                     Log.Error($"Exception: {ex.ToString()}");
+                    Log.Debug($"Inner Exception: {ex.InnerException.ToString()}");
                 }
             }
 
