@@ -8,10 +8,10 @@ namespace iotedgeSerial
         [JsonProperty("timestampUtc")]
         public DateTime TimestampUtc { get; set; }
 
-        [JsonProperty("data")]
-        public string Data { get; set; }
+        [JsonProperty("value")]
+        public string Value { get; set; }
 
-        [JsonProperty("device")]
-        public string Device { get; set; }
+        [JsonProperty("port")]
+        public string Port { get; set; }
     }
 }

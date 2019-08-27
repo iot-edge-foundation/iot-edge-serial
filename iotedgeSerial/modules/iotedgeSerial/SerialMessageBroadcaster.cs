@@ -7,11 +7,11 @@ namespace iotedgeSerial
 
     public class SerialMessageBroadcaster
     {
-        public void BroadcastMessage(string device, byte[] message)
+        public void BroadcastMessage(string port, byte[] message)
         {
             if (BroadcastEvent != null)
             {
-                BroadcastEvent(this, new SerialEventArgs { Device = device, Message = message });
+                BroadcastEvent(this, new SerialEventArgs { Port = port, Message = message });
             }
         }
 

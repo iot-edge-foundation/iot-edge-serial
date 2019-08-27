@@ -187,10 +187,10 @@ namespace iotedgeSerial
             var messageJson = Encoding.UTF8.GetString(messageBytes);
             var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(messageJson, typeof(SerialCommand));
             
-            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Device, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value));  // TODO: How to compose port name nad byte[] from message? 
+            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value));  // TODO: How to compose port name nad byte[] from message? 
             await Task.Delay(TimeSpan.FromSeconds(0));
 
-            Log.Debug($"Serial command '{serialCommand.Value}' for serial port '{serialCommand.Device}' broadcasted");
+            Log.Debug($"Serial command '{serialCommand.Value}' for serial port '{serialCommand.Port}' broadcasted");
             
             return MessageResponse.Completed;
         }
@@ -342,15 +342,15 @@ namespace iotedgeSerial
                         continue;
                     }
 
-                    var str = System.Text.Encoding.Default.GetString(response);
+                    var value = System.Text.Encoding.Default.GetString(response);
 
-                    Log.Information($"Data read from '{portConfig.Device}': '{str}'");
+                    Log.Information($"Data read from '{portConfig.Device}': '{value}'");
 
                     var serialMessage = new SerialMessage
                     {
-                        Data = str,
+                        Value = value,
                         TimestampUtc = DateTime.UtcNow,
-                        Device = portConfig.Device
+                        Port = port
                     };
 
                     var jsonMessage = JsonConvert.SerializeObject(serialMessage);
@@ -381,9 +381,9 @@ namespace iotedgeSerial
 
                 serialMessageBroadcaster.BroadcastEvent += (sender, se) =>
                 { 
-                    Log.Debug($"Executing BroadcastEvent for port '{se.Device}'");
+                    Log.Debug($"Executing BroadcastEvent for port '{se.Port}'");
 
-                    if (se.Device == port)
+                    if (se.Port == port)
                     {
                         Log.Debug($"BroadcastEvent has been picked up");
 
@@ -396,7 +396,7 @@ namespace iotedgeSerial
                         if (totalBytes.Length > 0)
                         {
                             serialPort.Write(totalBytes, 0, totalBytes.Length);
-                            Log.Information($"Written to '{se.Device}': '{ShowControlCharacters(Encoding.UTF8.GetString(totalBytes))}'");
+                            Log.Information($"Written to '{se.Port}': '{ShowControlCharacters(Encoding.UTF8.GetString(totalBytes))}'");
                         }
 
                         Log.Debug($"BroadcastEvent message handled");
