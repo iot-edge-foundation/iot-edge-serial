@@ -342,9 +342,9 @@ namespace iotedgeSerial
                         continue;
                     }
 
-                    var value = System.Text.Encoding.Default.GetString(response);
+                    var value = Encoding.UTF8.GetString(response);
 
-                    Log.Information($"Data read from '{portConfig.Device}': '{value}'");
+                    Log.Debug($"Data read from '{portConfig.Device}': '{value}'");
 
                     var serialMessage = new SerialMessage
                     {
@@ -357,12 +357,14 @@ namespace iotedgeSerial
 
                     Log.Debug($"Message out: '{jsonMessage}'");
 
-                    var pipeMessage = new Message(Encoding.UTF8.GetBytes(jsonMessage));
+                    var byteMessage = Encoding.UTF8.GetBytes(jsonMessage);
+                    var pipeMessage = new Message(byteMessage);
+                    
                     pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
                     await client.SendEventAsync(port, pipeMessage);
 
-                    Log.Debug($"Message sent");
+                    Log.Debug($"Message sent to output: {port}");
 
                     // wait a certain interval
                     await Task.Delay(portConfig.SleepInterval);
