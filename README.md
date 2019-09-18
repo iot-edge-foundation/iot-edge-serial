@@ -253,7 +253,7 @@ __* Note: This setting must survive a reboot of the host machine. *__
 
 ## Current limitations
 
-The module is currently not available in Windows environment, please use Linux host + Linux container to play with the module)
+The module is currently only available in Linux environments, please use Linux host + Linux container to play with the module.
 
 Data transferred is handled as UTF-8 strings currently.
 
