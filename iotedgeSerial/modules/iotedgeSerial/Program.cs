@@ -358,12 +358,14 @@ namespace iotedgeSerial
                     Log.Debug($"Message out: '{jsonMessage}'");
 
                     var byteMessage = Encoding.UTF8.GetBytes(jsonMessage);
-                    var pipeMessage = new Message(byteMessage);
                     
-                    pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
+                    using (var pipeMessage = new Message(byteMessage))
+                    {
+                        pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
-                    await client.SendEventAsync(port, pipeMessage);
-
+                        await client.SendEventAsync(port, pipeMessage);
+                    }
+                    
                     Log.Debug($"Message sent to output: {port}");
 
                     // wait a certain interval
