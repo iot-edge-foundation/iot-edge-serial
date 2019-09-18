@@ -134,6 +134,8 @@ Input/Output message format and Routing rules are introduced below.
 
 ### Read from Serial
 
+We read data from serial ports.
+
 #### Telemetry Message
 
 Message Properties:
@@ -147,9 +149,11 @@ Latest Message Payload:
 ```javascript
 {
     "timestampUtc":"2019-01-01T01:01:00.0000000Z",
-    "data":"<value>",
+    "data":"<data>",
     "device":"/dev/ttyS0"}
 ```
+
+*Note*: the 'data' is a UTF-8 string.
 
 #### Route to IoT Hub
 
@@ -183,11 +187,11 @@ Message Payload:
 ```javascript
 {
     "device" : "/dev/ttyS0",
-    "value":"<your value to write to serial>"
+    "data":"<your data to write to serial>"
 }
 ```
 
-*Note*: the 'value' is a base64 string of bytes.
+*Note*: the 'data' is decode as UTF-8 string.
 
 #### Route from other (filter) modules
 
@@ -239,3 +243,9 @@ Elevated rights are needed for access to the serial port. If your serial port is
 ```
 
 __* Note: This setting must survive a reboot of the host machine. *__
+
+## Limitations
+
+Data transferred is handled as UTF-8 strings currently.
+
+Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.   
