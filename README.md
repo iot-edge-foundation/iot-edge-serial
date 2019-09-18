@@ -184,9 +184,7 @@ Both solutions support writing back a single data message to a single serial por
 
 #### Command Message
 
-The content of command must be the following message format.
-
-Message Payload:
+The content of the message must following this message format:
 
 ```javascript
 {
