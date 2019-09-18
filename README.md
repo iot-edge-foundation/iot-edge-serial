@@ -51,7 +51,7 @@ If you are new to developing Azure IoT Edge modules, check out these resources f
 
 ## Build Environment Setup
 
-Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in Azure IoT Edge document. Please follow these links to setup a [Windows](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-windows) or [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux) build environment.
+Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in the Azure IoT Edge documentation. Please follow these links to setup a [Windows](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-windows) or [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux) build environment.
 
 Basic requirements:
 
