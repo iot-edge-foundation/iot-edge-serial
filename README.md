@@ -176,13 +176,17 @@ Latest Message Payload:
 
 ### Write to serial
 
-Serial module use input endpoint "serialInput" to receive commands. Currently it supports writing back to a single message to a serial port.
+Serial module use input endpoint "serialInput" to receive commands. This is used in combination with an other module using IoT Edge routes.
+
+As an alternative, a Direct Method called "serialWrite" can be used for Cloud to Device messaging.
+
+Both solutions support writing back a single data message to a single serial port.
 
 #### Command Message
 
 The content of command must be the following message format.
 
-Message Properties:
+Message Properties (for routing only):
 
 ```javascript
 "command-type": "SerialWrite"
@@ -256,6 +260,4 @@ The module is currently only available in Linux environments, please use Linux h
 
 Data transferred is handled as UTF-8 strings currently.
 
-Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.   
-
-Currently, this module only supports sending messages using IoT Edge routing, direct C2D messages are not supported yet.
+Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.
