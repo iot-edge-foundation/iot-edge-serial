@@ -176,18 +176,15 @@ Latest Message Payload:
 
 ### Write to serial
 
-Serial module use input endpoint "serialInput" to receive commands. Currently it supports writing back to a single message to a serial port.
-__*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages are not supported yet.*__
+Serial module use input endpoint "serialInput" to receive commands. This is used in combination with an other module using IoT Edge routes.
+
+As an alternative, a Direct Method called "serialWrite" can be used for Cloud to Device messaging.
+
+Both solutions support writing back a single data message to a single serial port.
 
 #### Command Message
 
 The content of command must be the following message format.
-
-Message Properties:
-
-```javascript
-"command-type": "SerialWrite"
-```
 
 Message Payload:
 
@@ -243,7 +240,7 @@ Define as much devices as you need.
 
 #### Access for read/write on serial ports
 
-Elevated rights are needed for access to the serial port. If your serial port is named eg. '/dev/ttyS0' use:
+Elevated rights are needed for access to serial ports. If your serial port is named eg. '/dev/ttyS0' use:
 
 ```bash
 # chmod 666 /dev/ttyS0
@@ -253,8 +250,8 @@ __* Note: This setting must survive a reboot of the host machine. *__
 
 ## Current limitations
 
-The module is currently not available in Windows environment, please use Linux host + Linux container to play with the module)
+The module is currently only available in Linux environments, please use Linux host + Linux container to play with the module.
 
 Data transferred is handled as UTF-8 strings currently.
 
-Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.   
+Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.

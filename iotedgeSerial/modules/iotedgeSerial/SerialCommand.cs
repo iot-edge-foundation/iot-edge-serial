@@ -8,6 +8,6 @@ namespace iotedgeSerial
         public string Port { get; set; }
 
         [JsonProperty("value")]
-        public string Value { get; set; } // TODO: byte[] or string????
+        public string Value { get; set; }
     }
 }
