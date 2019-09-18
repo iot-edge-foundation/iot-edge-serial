@@ -151,7 +151,8 @@ Latest Message Payload:
 {
     "timestampUtc":"2019-01-01T01:01:00.0000000Z",
     "data":"<data>",
-    "device":"/dev/ttyS0"}
+    "device":"/dev/ttyS0"
+}
 ```
 
 *Note*: the 'data' is a UTF-8 string.
