@@ -248,8 +248,8 @@ __* Note: This setting must survive a reboot of the host machine. *__
 
 ## Current limitations
 
-The module is currently only available in Linux environments, please use Linux host + Linux container to play with the module.
+Due to the fact the module is still being developed and tested, there are certain limitations to the module.
 
-Data transferred is handled as UTF-8 strings currently.
-
-Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.
+- only available in Linux environments, please use Linux host + Linux container to play with the module.
+- Data transferred is handled as UTF-8 strings currently.
+- A &lt;named port&gt; is considered as being uni-directional. For bi-directional communication in Linux two &lt;named port&gt;s are offered for two serial connections to a single tty device.
