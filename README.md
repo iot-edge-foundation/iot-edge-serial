@@ -36,7 +36,7 @@ Visit http://azure.com/iotdev to learn more about developing applications for Az
 
 Azure IoT Edge is designed to be used with a broad range of operating system platforms. Serial module has been tested on the following platforms:
 
-- Windows 10 IoT Enterprise (version 1809) x64
+- ~~Windows 10 IoT Enterprise (version 1809) x64~~
 - ~~Windows 10 IoT Core (version 1809) x64~~
 - Linux x64
 - ~~Linux arm32v7~~
@@ -246,7 +246,9 @@ Elevated rights are needed for access to the serial port. If your serial port is
 
 __* Note: This setting must survive a reboot of the host machine. *__
 
-## Limitations
+## Current limitations
+
+The module is currently not available in Windows environment, please use Linux host + Linux container to play with the module)
 
 Data transferred is handled as UTF-8 strings currently.
 
