@@ -43,7 +43,7 @@ Azure IoT Edge is designed to be used with a broad range of operating system pla
 
 ### Device Setup
 
-If you are new Azure IoT Edge, check out these resources first:
+If you are new to developing Azure IoT Edge modules, check out these resources first:
 
 - [Windows 10 Desktop](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
 - [Windows 10 IoT Core](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-core)
