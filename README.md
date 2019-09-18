@@ -163,7 +163,7 @@ Latest Message Payload:
 ### Write to serial
 
 Serial module use input endpoint "serialInput" to receive commands. Currently it supports writing back to a single message to a serial port.
-__*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages do work yet.*__
+__*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages are not supported yet.*__
 
 #### Command Message
 
@@ -183,6 +183,8 @@ Message Payload:
     "value":"<your value to write to serial>"
 }
 ```
+
+*Note*: the 'value' is a base64 string of bytes.
 
 #### Route from other (filter) modules
 
