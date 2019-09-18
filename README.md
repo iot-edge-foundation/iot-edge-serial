@@ -97,9 +97,10 @@ Before running the module on an IoT Edge, proper configuration is required. Here
         "stopBits": "One",
         "delimiter": "\r\n",
         "ignoreEmptyLines": false
-          }
-        }
       }
+    }
+  }
+}  
 ```
 
 Meaning of each field:
