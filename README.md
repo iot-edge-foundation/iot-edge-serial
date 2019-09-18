@@ -110,16 +110,17 @@ Before running the module on an IoT Edge, proper configuration is required. Here
 Meaning of each field:
 - **portConfigs**: Array of port configurations, size 1 to n
     - **&lt;named port&gt;**: Named port like 'ttyS0' and 'ttyS1' in the example above
-        - **sleepInterval**: # of miliseconds the thread should sleep as integer
         - **device**: Device like /dev/tty... as string. (*Note:* Has to resemble the 'PathInContainer' create option)
+        - **direction**: To read from or write to the devicePossible values: Read or Write.
+        - **sleepInterval**: # of milliseconds the thread should sleep as integer
         - **baudRate**: # of bauds as integer
-        - **parity**: Partity with possible values: None, One, as string
+        - **parity**: Parity; with possible values: None, One, as string
         - **dataBits**: # number of data bits as integer
         - **stopBits**: Stop bits with possible values: as string
-        - **delimiter**: Delimiter to seperate data into messages as string
+        - **delimiter**: Delimiter to separate data into messages as string
         - **ignoreEmptyLines**: Ignore empty lines in input data as boolean
 
-Naming convention for named ports is to use the device name as used in the operating system, like 'ttyS0' on Linux or 'COM1' on Windows for the first serial port.
+Naming convention for &lt;named port&gt; is to use the device name as used in the operating system, like 'ttyS0' on Linux or 'COM1' on Windows for the first serial port.
 
 Input data length is limited to 1024 bytes. This is to prevent timeouts due to not recognized delimiters in the input stream. After 1024 bytes a warning message is logged. This exception is treated as an empty line.
 
@@ -129,7 +130,7 @@ For more about the RS232 standard, please refer to the [Wiki](https://en.wikiped
 
 There are multiple endpoints defined in Serial module dynamically:
 
-- "&lt;name defined in portConfigs&gt;": This is a output endpoint for telemetries per configured port. The read operation defined in the direction field of the named port in configuration will be composed as telemetry messages output to this endpoint.
+- &lt;named port&gt; defined in portConfigs: This is an output endpoint for telemetries per configured port. The operation defined in the direction field of the named port will be dynamically instantiated as telemetry messages output.
 
 There is one input defined:
 
