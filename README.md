@@ -243,7 +243,7 @@ Define as much devices as you need.
 
 #### Access for read/write on serial ports
 
-Elevated rights are needed for access to the serial port. If your serial port is named eg. '/dev/ttyS0' use:
+Elevated rights are needed for access to serial ports. If your serial port is named eg. '/dev/ttyS0' use:
 
 ```bash
 # chmod 666 /dev/ttyS0
