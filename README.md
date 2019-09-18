@@ -119,9 +119,12 @@ For more about RS232, please refer to the [Wiki](https://en.wikipedia.org/wiki/R
 
 ## Module Endpoints and Routing
 
-There are multiple endpoints defined in Serial module:
+There are multiple endpoints defined in Serial module dynamically:
 
 - "&lt;name defined in portConfigs&gt;": This is a output endpoint for telemetries per configured port. The read operation defined in the direction field of the named port in configuration will be composed as telemetry messages output to this endpoint.
+
+There is one input defined:
+
 - "serialInput": This is an input endpoint for write commands for all named ports.
 
 Input/Output message format and Routing rules are introduced below.
