@@ -241,7 +241,7 @@ Define as much devices as you need.
 For debugging purposes an environment variable is supported for more logging:
 
 ```
-RuntimeLogLevel = debug
+RuntimeLogLevel = debug|info
 ````
 
 #### Access for read/write on serial ports
