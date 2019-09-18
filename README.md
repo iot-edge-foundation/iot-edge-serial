@@ -154,8 +154,8 @@ Latest Message Payload:
 
 ```javascript
 {
-    "data":"<data>",
     "port":"ttyS0",
+    "data":"<data>",
     "timestampUtc":"2019-01-01T01:01:00.0000000Z",
 }
 ```
