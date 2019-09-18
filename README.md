@@ -177,7 +177,6 @@ Latest Message Payload:
 ### Write to serial
 
 Serial module use input endpoint "serialInput" to receive commands. Currently it supports writing back to a single message to a serial port.
-__*Note: Currently IoT Edge only supports send messages into one module from another module, direct C2D messages are not supported yet.*__
 
 #### Command Message
 
@@ -258,3 +257,5 @@ The module is currently only available in Linux environments, please use Linux h
 Data transferred is handled as UTF-8 strings currently.
 
 Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.   
+
+Currently, this module only supports sending messages using IoT Edge routing, direct C2D messages are not supported yet.
