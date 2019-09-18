@@ -16,19 +16,19 @@
 
 ## Azure IoT Edge Serial Port (RS232) Communication module for Linux & Windows
 
-Using this module, developers can build Azure IoT Edge solutions with Serial (RS232) Port (the module is currently not available in Windows environment, please use Linux host + Linux container to play with the module) connectivity. The Serial module is an Azure IoT Edge module, capable of reading data from serial port devices and publishing data to the Azure IoT Hub via the Edge framework. Developers can modify the module tailoring to any scenario.
+Using this module, developers can build Azure IoT Edge solutions with Serial (RS232) Port connectivity. The Serial module is an Azure IoT Edge module, capable of reading data from and writing data to serial port devices and publishing data to the Azure IoT Hub via the IoT Edge routes. Developers can configure the module tailoring to any scenario.
 
 ![Azure IoT Edge Serial Module Architecture](docs/images/architecture-with-logo.png)
 
-There are prebuilt Serial module container images ready at [https://docker.io/jeeweetje/iotedge/](https://docker.io/jeeweetje/iotedge/) for you to quick start the experience of Azure IoT Edge on your target device or simulated device.
-
-Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
+Prebuilt Serial module container images are available at [https://docker.io/jeeweetje/iotedge/](https://docker.io/jeeweetje/iotedge/). So you can jump start the serial port experience on your Azure IoT Edge device.
 
 ## Azure IoT Edge Compatibility
 
-Current version of the module is targeted for the [Azure IoT Edge GA](https://azure.microsoft.com/en-us/blog/azure-iot-edge-generally-available-for-enterprise-grade-scaled-deployments/).
+The current version of the module is targeted for the latest [Azure IoT Edge GA](https://azure.microsoft.com/en-us/blog/azure-iot-edge-generally-available-for-enterprise-grade-scaled-deployments/).
 
 Find more information about Azure IoT Edge at [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-iot-edge-works).
+
+Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
 
 ## Target Device Setup
 
@@ -36,12 +36,14 @@ Find more information about Azure IoT Edge at [here](https://docs.microsoft.com/
 
 Azure IoT Edge is designed to be used with a broad range of operating system platforms. Serial module has been tested on the following platforms:
 
-- Windows 10 IoT Enterprise (version 1809) x64
+- ~~Windows 10 IoT Enterprise (version 1809) x64~~
 - ~~Windows 10 IoT Core (version 1809) x64~~
 - Linux x64
 - ~~Linux arm32v7~~
 
 ### Device Setup
+
+If you are new to developing Azure IoT Edge modules, check out these resources first:
 
 - [Windows 10 Desktop](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
 - [Windows 10 IoT Core](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-core)
@@ -49,25 +51,30 @@ Azure IoT Edge is designed to be used with a broad range of operating system pla
 
 ## Build Environment Setup
 
-Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in Azure IoT Edge document. Please follow [this link](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-csharp-module) to setup the build environment.
+Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in the Azure IoT Edge documentation. Please follow these links to setup a [Windows](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-windows) or [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux) build environment.
 
-Basic requirement:
+Basic requirements:
 
-- Moby or Docker CE
+- Docker CE or Moby (Linux only)
 - .NET Core 2.1 SDK
+- Visual Studio Code
 
-## HowTo Build
+## How to build
 
-In this section, the Serial module we be built as an IoT Edge module.
+In this section, the Serial module will be built as an IoT Edge module.
 
-Open the project in Microsoft Visual Studio Code, and open VS Code command palette (ctrl-shift-p), type and run the command Edge: Build IoT Edge solution. Select the deployment.template.json file for your solution from the command palette.
+### Build your own module
+
+Open the project in Microsoft Visual Studio Code, and open the VS Code command palette (ctrl-shift-p), type and run the command 'Azure IoT Edge: Build IoT Edge solution'. Select the deployment.template.json file for your solution from the command palette.
 __*Note: Be sure to check configuration section to properly set each fields before deploying the module.*__
+
+### Deploy your module
 
 In Azure IoT Hub Devices explorer, right-click an IoT Edge device ID, then select Create deployment for IoT Edge device. Open the config folder of your solution, then select the deployment.json file. Click Select Edge Deployment Manifest. Then you can see the deployment is successfully created with a deployment ID in VS Code integrated terminal. You can check your container status in the VS Code Docker explorer or by run the docker ps command in the terminal.
 
 ## Configuration
 
-Before running the module, proper configuration is required. Here is a sample configuration for your reference.
+Before running the module on an IoT Edge, proper configuration is required. Here is a sample configuration for your reference.
 
 ```javascript
 "serial": {
@@ -94,9 +101,10 @@ Before running the module, proper configuration is required. Here is a sample co
         "stopBits": "One",
         "delimiter": "\r\n",
         "ignoreEmptyLines": false
-          }
-        }
       }
+    }
+  }
+}  
 ```
 
 Meaning of each field:
@@ -109,13 +117,13 @@ Meaning of each field:
         - **dataBits**: # number of data bits as integer
         - **stopBits**: Stop bits with possible values: as string
         - **delimiter**: Delimiter to seperate data into messages as string
-        - **ignoreEmptyLines**: Ignore empty lines in data as boolean
+        - **ignoreEmptyLines**: Ignore empty lines in input data as boolean
 
 Naming convention for named ports is to use the device name as used in the operating system, like 'ttyS0' on Linux or 'COM1' on Windows for the first serial port.
 
-If the delimiter is not recognized in time in the input stream, the input will be ignored every 1024 bytes and  a warning message is logged. This exception is treated as an empty line.
+Input data length is limited to 1024 bytes. This is to prevent timeouts due to not recognized delimiters in the input stream. After 1024 bytes a warning message is logged. This exception is treated as an empty line.
 
-For more about RS232, please refer to the [Wiki](https://en.wikipedia.org/wiki/RS-232) link.
+For more about the RS232 standard, please refer to the [Wiki](https://en.wikipedia.org/wiki/RS-232) link.
 
 ## Module Endpoints and Routing
 
@@ -131,6 +139,8 @@ Input/Output message format and Routing rules are introduced below.
 
 ### Read from Serial
 
+We read data from serial ports.
+
 #### Telemetry Message
 
 Message Properties:
@@ -144,9 +154,12 @@ Latest Message Payload:
 ```javascript
 {
     "timestampUtc":"2019-01-01T01:01:00.0000000Z",
-    "data":"<value>",
-    "device":"/dev/ttyS0"}
+    "data":"<data>",
+    "device":"/dev/ttyS0"
+}
 ```
+
+*Note*: the 'data' is a UTF-8 string.
 
 #### Route to IoT Hub
 
@@ -180,11 +193,11 @@ Message Payload:
 ```javascript
 {
     "device" : "/dev/ttyS0",
-    "value":"<your value to write to serial>"
+    "data":"<your data to write to serial>"
 }
 ```
 
-*Note*: the 'value' is a base64 string of bytes.
+*Note*: the 'data' is decode as UTF-8 string.
 
 #### Route from other (filter) modules
 
@@ -236,3 +249,11 @@ Elevated rights are needed for access to the serial port. If your serial port is
 ```
 
 __* Note: This setting must survive a reboot of the host machine. *__
+
+## Current limitations
+
+The module is currently not available in Windows environment, please use Linux host + Linux container to play with the module)
+
+Data transferred is handled as UTF-8 strings currently.
+
+Ports are considered as being uni-directional. For bi-directional communication In Linux two tty ports are offered for one serial connection.   
