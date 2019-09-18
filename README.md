@@ -236,6 +236,14 @@ Replace ```<device name on host machine>``` with the actual serial device like '
 The 'PathInContainer' create option has to resemble the desired property 'device'.
 Define as much devices as you need.
 
+#### Environment variables
+
+For debugging purposes an environment variable is supported for more logging:
+
+```
+RuntimeLogLevel = debug
+````
+
 #### Access for read/write on serial ports
 
 Elevated rights are needed for access to serial ports. If your serial port is named eg. '/dev/ttyS0' use:
