@@ -136,7 +136,7 @@ There is one input defined:
 
 - "serialInput": This is an input endpoint for write commands for all named ports.
 
-Input/Output message format and Routing rules are introduced below.
+Input/Output message formats and routing rules are introduced below.
 
 ### Read from Serial
 
