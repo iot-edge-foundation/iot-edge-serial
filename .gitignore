@@ -5,6 +5,7 @@ artifacts/
 **/Properties/launchSettings.json
 */modules/*/out
 */.vscode/settings.json
+.vscode/settings.json
 
 *_i.c
 *_p.c
@@ -30,3 +31,4 @@ artifacts/
 *.pidb
 *.svclog
 *.scc
+
