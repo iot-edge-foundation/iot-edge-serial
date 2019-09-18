@@ -20,7 +20,7 @@ Using this module, developers can build Azure IoT Edge solutions with Serial (RS
 
 ![Azure IoT Edge Serial Module Architecture](docs/images/architecture-with-logo.png)
 
-Prebuilt Serial module container images are available at [https://docker.io/jeeweetje/iotedge/](https://docker.io/jeeweetje/iotedge/). So you can jump start the serial port experience on your Azure IoT Edge device.
+Prebuilt Serial module container images are available at [https://hub.docker.com/r/jeeweetje/iot-edge-serial](https://hub.docker.com/r/jeeweetje/iot-edge-serial). So you can jump start the serial port experience on your Azure IoT Edge device.
 
 ## Azure IoT Edge Compatibility
 
