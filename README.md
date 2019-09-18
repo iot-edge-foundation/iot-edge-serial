@@ -59,7 +59,7 @@ Basic requirements:
 - .NET Core 2.1 SDK
 - Visual Studio Code
 
-## HowTo Build
+## How to build
 
 In this section, the Serial module we be built as an IoT Edge module.
 
@@ -70,7 +70,7 @@ In Azure IoT Hub Devices explorer, right-click an IoT Edge device ID, then selec
 
 ## Configuration
 
-Before running the module, proper configuration is required. Here is a sample configuration for your reference.
+Before running the module on an IoT Edge, proper configuration is required. Here is a sample configuration for your reference.
 
 ```javascript
 "serial": {
@@ -112,13 +112,13 @@ Meaning of each field:
         - **dataBits**: # number of data bits as integer
         - **stopBits**: Stop bits with possible values: as string
         - **delimiter**: Delimiter to seperate data into messages as string
-        - **ignoreEmptyLines**: Ignore empty lines in data as boolean
+        - **ignoreEmptyLines**: Ignore empty lines in input data as boolean
 
 Naming convention for named ports is to use the device name as used in the operating system, like 'ttyS0' on Linux or 'COM1' on Windows for the first serial port.
 
-If the delimiter is not recognized in time in the input stream, the input will be ignored every 1024 bytes and  a warning message is logged. This exception is treated as an empty line.
+Input data length is limited to 1024 bytes. This is to prevent timeouts due to not recognized delimiters in the input stream. After 1024 bytes a warning message is logged. This exception is treated as an empty line.
 
-For more about RS232, please refer to the [Wiki](https://en.wikipedia.org/wiki/RS-232) link.
+For more about the RS232 standard, please refer to the [Wiki](https://en.wikipedia.org/wiki/RS-232) link.
 
 ## Module Endpoints and Routing
 
