@@ -187,11 +187,11 @@ namespace iotedgeSerial
             var messageJson = Encoding.UTF8.GetString(messageBytes);
             var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(messageJson, typeof(SerialCommand));
             
-            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value)); 
+            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Data)); 
             
             await Task.Delay(TimeSpan.FromSeconds(0));
 
-            Log.Debug($"Serial command '{serialCommand.Value}' for serial port '{serialCommand.Port}' broadcasted");
+            Log.Debug($"Serial command '{serialCommand.Data}' for serial port '{serialCommand.Port}' broadcasted");
             
             return MessageResponse.Completed;
         }
@@ -207,11 +207,11 @@ namespace iotedgeSerial
             var messageJson = Encoding.UTF8.GetString(messageBytes);
             var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(messageJson, typeof(SerialCommand));
 
-            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value)); 
+            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Data)); 
 
             await Task.Delay(TimeSpan.FromSeconds(0));
 
-            Log.Debug($"Serial method '{serialCommand.Value}' for serial port '{serialCommand.Port}' broadcasted");
+            Log.Debug($"Serial method '{serialCommand.Data}' for serial port '{serialCommand.Port}' broadcasted");
 
             return new MethodResponse(200);
         }
@@ -351,15 +351,15 @@ namespace iotedgeSerial
                         continue;
                     }
 
-                    var value = Encoding.UTF8.GetString(response);
+                    var data = Encoding.UTF8.GetString(response);
 
-                    Log.Debug($"Data read from '{portConfig.Device}': '{value}'");
+                    Log.Debug($"Data read from '{portConfig.Device}': '{data}'");
 
                     var serialMessage = new SerialMessage
                     {
-                        Value = value,
+                        Data = data,
+                        Port = port,
                         TimestampUtc = DateTime.UtcNow,
-                        Port = port
                     };
 
                     var jsonMessage = JsonConvert.SerializeObject(serialMessage);

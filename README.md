@@ -154,9 +154,9 @@ Latest Message Payload:
 
 ```javascript
 {
-    "timestampUtc":"2019-01-01T01:01:00.0000000Z",
     "data":"<data>",
-    "device":"/dev/ttyS0"
+    "port":"ttyS0",
+    "timestampUtc":"2019-01-01T01:01:00.0000000Z",
 }
 ```
 
@@ -188,7 +188,7 @@ The content of the message must follow this message format:
 
 ```javascript
 {
-    "device" : "/dev/ttyS0",
+    "port" : "ttyS0",
     "data":"<your data to write to serial>"
 }
 ```

@@ -5,13 +5,13 @@ namespace iotedgeSerial
 {
     public class SerialMessage
     {
-        [JsonProperty("timestampUtc")]
-        public DateTime TimestampUtc { get; set; }
-
-        [JsonProperty("value")]
-        public string Value { get; set; }
+        [JsonProperty("data")]
+        public string Data { get; set; }
 
         [JsonProperty("port")]
         public string Port { get; set; }
+
+        [JsonProperty("timestampUtc")]
+        public DateTime TimestampUtc { get; set; }
     }
 }
