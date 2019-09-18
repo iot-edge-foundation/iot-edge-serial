@@ -187,7 +187,8 @@ namespace iotedgeSerial
             var messageJson = Encoding.UTF8.GetString(messageBytes);
             var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(messageJson, typeof(SerialCommand));
             
-            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value));  // TODO: How to compose port name nad byte[] from message? 
+            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value)); 
+            
             await Task.Delay(TimeSpan.FromSeconds(0));
 
             Log.Debug($"Serial command '{serialCommand.Value}' for serial port '{serialCommand.Port}' broadcasted");
@@ -201,9 +202,17 @@ namespace iotedgeSerial
         static async Task<MethodResponse> SerialWriteMethodCallBack(MethodRequest methodRequest, object userContext)
         {
             Log.Debug("Executing SerialWriteMethodCallBack");
-            
-            _serialMessageBroadcaster.BroadcastMessage("bla", null); // TODO: How to compose port name nad byte[] from message?
+
+            var messageBytes = methodRequest.Data;
+            var messageJson = Encoding.UTF8.GetString(messageBytes);
+            var serialCommand = (SerialCommand)JsonConvert.DeserializeObject(messageJson, typeof(SerialCommand));
+
+            _serialMessageBroadcaster.BroadcastMessage(serialCommand.Port, System.Text.Encoding.UTF8.GetBytes(serialCommand.Value)); 
+
             await Task.Delay(TimeSpan.FromSeconds(0));
+
+            Log.Debug($"Serial method '{serialCommand.Value}' for serial port '{serialCommand.Port}' broadcasted");
+
             return new MethodResponse(200);
         }
 

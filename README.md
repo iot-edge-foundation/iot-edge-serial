@@ -186,12 +186,6 @@ Both solutions support writing back a single data message to a single serial por
 
 The content of command must be the following message format.
 
-Message Properties (for routing only):
-
-```javascript
-"command-type": "SerialWrite"
-```
-
 Message Payload:
 
 ```javascript
