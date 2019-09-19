@@ -80,7 +80,6 @@ namespace iotedgeSerial
 
                 Log.Information($"Module '{Environment.GetEnvironmentVariable("IOTEDGE_MODULEID")}' initialized");
                 Log.Information($".Net framework version '{Environment.GetEnvironmentVariable("DOTNET_VERSION")}' in use");
-
             }
             catch (AggregateException ex)
             {
