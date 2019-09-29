@@ -232,7 +232,7 @@ In the Container "createOptions" section, enter the following for device mapping
 }
 ```
 
-Replace ```<device name on host machine>``` with the actual serial device like '/dev/ttyS0'.
+Replace ```<device name on host machine>``` with the actual serial device like '/dev/ttyS0' or /dev/rfcomm0.
 The 'PathInContainer' create option has to resemble the desired property 'device'.
 Define as much devices as you need.
 
@@ -250,9 +250,43 @@ Elevated rights are needed for access to serial ports. If your serial port is na
 
 ```bash
 # chmod 666 /dev/ttyS0
+``````
+
+__* Note: This setting must survive a reboot of the host machine. Use *__
+
+Using Ubuntu, one way to persist elevated rights is using a file named /etc/rc.local with this content:
+
+```bash
+#!/bin/bash
+sudo chmod 666 /dev/ttyS0
+exit 0
 ```
 
-__* Note: This setting must survive a reboot of the host machine. *__
+After saving this file, perform:
+
+```bash
+# chmod 777 /etc/rc.local
+```
+
+Please reboot your machine so these changes can be applied.
+
+## Supported hardware
+
+We test our module on actual hardware. 
+
+The following Azure IoT Edge devices are used to test the module: 
+
+- Advantech Uno 2271GSV
+- Advantech Uno 2372G
+
+The following serial devices are used to test the module:
+
+- [Null](https://en.wikipedia.org/wiki/Null_modem) modem
+- BEITIAN USB GNSS GPS Receiver BN-85U (U-Blox UBX-M8030)
+- Webio GRB-288 Bluetooth GPS mouse
+- GSpace GS-R238 GPS mouse (SiRFstarIII)
+
+*Note*: If you want to have your serial device tested, listed and officially supported here, please send us a DM on github
 
 ## Current limitations
 
@@ -261,3 +295,10 @@ Due to the fact the module is still being developed and tested, there are certai
 - only available in Linux environments, please use Linux host + Linux container to play with the module.
 - Data transferred is handled as UTF-8 strings currently.
 - A &lt;named port&gt; is considered as being uni-directional. For bi-directional communication in Linux two &lt;named port&gt;s are offered for two serial connections to a single tty device.
+- Bluetooth devices with serial port support will work. But Bluetooth serial ports are not persisted so both reuse of the same portname and reuse of elevated rights not not garanteed.
+
+## Contribute
+
+The code of this module is open-sourced and licenced under the MIT license.
+
+Want to contribute? Throw us a pull request....
