@@ -45,13 +45,15 @@ If you don't see your idea listed, and you think it fits into the goals of this 
 * **If your contribution is minor,** such as a typo fix, open a pull request.
 * **If your contribution is major,** such as a new feature, start by opening an issue first. That way, other people can weigh in on the discussion before you do any work.
 
-## Setting up your environment
-TODO
-This site is powered by [Azure IoT Edge](https://putlink.here/). Running it on your local machine requires a working [Moby](https://putlink.here) installation with [Azure IoT Edge](https://putlink.here/).
+## Build Environment Setup
 
-Once you have that set up, run:
+Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in the Azure IoT Edge documentation. Please follow these links to setup a [Windows](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-windows) or [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux) build environment.
 
-TODO: Add steps to run
+Basic requirements:
+
+- Docker CE or Moby (Linux only)
+- .NET Core 2.1 SDK
+- Visual Studio Code
 
 ## Community
 
