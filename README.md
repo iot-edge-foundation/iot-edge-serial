@@ -283,6 +283,7 @@ The following Azure IoT Edge devices are used to test the module:
 The following serial devices are used to test the module:
 
 - [Null](https://en.wikipedia.org/wiki/Null_modem) modem
+- Moxa NPort 5210A Serial 2 Port Device Server with Null Modem
 - BEITIAN USB GNSS GPS Receiver BN-85U (U-Blox UBX-M8030)
 - Webio GRB-288 Bluetooth GPS mouse
 - GSpace GS-R238 GPS mouse (SiRFstarIII)
