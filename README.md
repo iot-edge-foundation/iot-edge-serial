@@ -252,7 +252,7 @@ Elevated rights are needed for access to serial ports. If your serial port is na
 # chmod 666 /dev/ttyS0
 ``````
 
-__* Note: This setting must survive a reboot of the host machine. Use *__
+__* Note: This setting must survive a reboot of the host machine!*__
 
 Using Ubuntu, one way to persist elevated rights is using a file named /etc/rc.local with this content:
 
@@ -276,8 +276,9 @@ We test our module on actual hardware.
 
 The following Azure IoT Edge devices are used to test the module: 
 
-- Advantech Uno 2271GSV
+- Advantech Uno 2271G
 - Advantech Uno 2372G
+- Advantech Uno 1372G
 
 The following serial devices are used to test the module:
 
