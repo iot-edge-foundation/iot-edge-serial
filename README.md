@@ -171,7 +171,7 @@ Latest Message Payload:
 #### Route to other (filter) modules
 
 ```javascript
-"routeToModule": "FROM /messages/modules/serial/outputs/ttyS0 INTO BrokeredEndpoint(\"/modules/module/inputs/input1\")"
+"routeToModule": "FROM /messages/modules/serial/outputs/ttyS0 INTO BrokeredEndpoint(\"/modules/[module name]/inputs/input1\")"
 ```
 
 ### Write to serial
