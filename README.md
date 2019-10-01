@@ -174,11 +174,12 @@ Latest Message Payload:
 "routeToModule": "FROM /messages/modules/serial/outputs/ttyS0 INTO BrokeredEndpoint(\"/modules/[module name]/inputs/input1\")"
 ```
 
-### Write to serial
+### Write commands to serial port
 
-Serial module use input endpoint "serialInput" to receive commands. This is used in combination with an other module using IoT Edge routes.
+This module supports for writing to a port:
 
-As an alternative, a Direct Method called "serialWrite" can be used for Cloud to Device messaging.
+1. An input endpoint "serialInput" to receive commands. This is used in combination with an other module using IoT Edge routes.
+2. Direct Methods called "serialWrite" can be used for Cloud to Device messaging.
 
 Both solutions support writing back a single data message to a single serial port.
 
