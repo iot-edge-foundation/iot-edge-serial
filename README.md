@@ -168,6 +168,8 @@ Latest Message Payload:
 "routeToIoTHub": "FROM /messages/modules/serial/outputs/ttyS0 INTO $upstream"
 ```
 
+[](/docs/images/serial-route1.png)
+
 #### Route to other (filter) modules
 
 ```javascript
