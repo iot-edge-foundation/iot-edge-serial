@@ -208,6 +208,8 @@ The command should have a property "command-type" with value "SerialWrite". Also
 "commandSourceToSerialWrite": "FROM /messages/modules/[source module name]/outputs/output1 INTO BrokeredEndpoint(\"/modules/serial/inputs/serialInput\")"
 ```
 
+![routeToIoTHub](/docs/images/serial-route3.png)
+
 ## How to run
 
 ### Run as an IoT Edge module
