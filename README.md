@@ -306,6 +306,12 @@ Due to the fact the module is still being developed and tested, there are certai
 - A &lt;named port&gt; is considered as being uni-directional. For bi-directional communication in Linux two &lt;named port&gt;s are offered for two serial connections to a single tty device.
 - Bluetooth devices with serial port support will work. But Bluetooth serial ports are not persisted so both reuse of the same portname and reuse of elevated rights not not garanteed.
 
+## Acknowledgement
+
+The serial reader/writer is based on the [Microsoft Modbus module](https://github.com/Azure/iot-edge-modbus).
+
+The routing images are produced with the [IoT Edge Module Flow generator](https://iotedgemoduleflow.azurewebsites.net/).
+
 ## Contribute
 
 The code of this module is open-sourced and licenced under the MIT license.
