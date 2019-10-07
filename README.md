@@ -168,13 +168,15 @@ Latest Message Payload:
 "routeToIoTHub": "FROM /messages/modules/serial/outputs/ttyS0 INTO $upstream"
 ```
 
-[](/docs/images/serial-route1.png)
+![routeToIoTHub](/docs/images/serial-route1.png)
 
 #### Route to other (filter) modules
 
 ```javascript
-"routeToModule": "FROM /messages/modules/serial/outputs/ttyS0 INTO BrokeredEndpoint(\"/modules/[module name]/inputs/input1\")"
+"routeToModule": "FROM /messages/modules/serial/outputs/ttyS0 INTO BrokeredEndpoint(\"/modules/[target module name]/inputs/input1\")"
 ```
+
+![routeToIoTHub](/docs/images/serial-route2.png)
 
 ### Write commands to serial port
 
@@ -203,7 +205,7 @@ The content of the message must follow this message format:
 The command should have a property "command-type" with value "SerialWrite". Also, routing must be enabled by specifying rule like below.
 
 ```javascript
-"commandSourceToSerialWrite": "FROM /messages/modules/command-source/outputs/output1 INTO BrokeredEndpoint(\"/modules/serial/inputs/serialInput\")"
+"commandSourceToSerialWrite": "FROM /messages/modules/[source module name]/outputs/output1 INTO BrokeredEndpoint(\"/modules/serial/inputs/serialInput\")"
 ```
 
 ## How to run
