@@ -101,44 +101,48 @@ namespace iotedgeSerial
 
             try
             {
-                // stop all activities while updating configuration
-                await ioTHubModuleClient.SetInputMessageHandlerAsync(
-                    "serialInput",
-                    DummyMessageCallBack,
-                    null);
+                try
+                {
+                    // stop all activities while updating configuration
+                    await ioTHubModuleClient.SetInputMessageHandlerAsync(
+                        "serialInput",
+                        DummyMessageCallBack,
+                        null);
 
-                await ioTHubModuleClient.SetMethodHandlerAsync(
-                    "serialWrite",
-                    DummyMethodCallBack,
-                    null);
+                    await ioTHubModuleClient.SetMethodHandlerAsync(
+                        "serialWrite",
+                        DummyMethodCallBack,
+                        null);
 
-                Log.Debug("Dummies attached");
+                    Log.Debug("Dummies attached");
 
-                _run = false;
-                await Task.WhenAll(_taskList); // wait until all tasks are completed
+                    _run = false;
+                    await Task.WhenAll(_taskList); // wait until all tasks are completed
 
-                Log.Debug("Waited for all tasks to complete");
+                    Log.Debug("Waited for all tasks to complete");
 
-                _taskList.Clear();
-                _run = true;
+                    _taskList.Clear();
+                    _run = true;
 
-                Log.Debug("List cleared");
+                    Log.Debug("List cleared");
 
-                // start new activities with new set of desired properties
-                await SetupNewTasks(desiredProperties, ioTHubModuleClient);
+                    // start new activities with new set of desired properties
+                    await SetupNewTasks(desiredProperties, ioTHubModuleClient);
+                }
+                finally
+                {
+                    // assign input message handler again
+                    await ioTHubModuleClient.SetInputMessageHandlerAsync(
+                        "serialInput",
+                        SerialMessageCallBack,
+                        ioTHubModuleClient);
 
-                // assign input message handler again
-                await ioTHubModuleClient.SetInputMessageHandlerAsync(
-                    "serialInput",
-                    SerialMessageCallBack,
-                    ioTHubModuleClient);
-
-                // assign direct method handler again
-                await ioTHubModuleClient.SetMethodHandlerAsync(
-                    "serialWrite",
-                    SerialWriteMethodCallBack,
-                    ioTHubModuleClient);
-
+                    // assign direct method handler again
+                    await ioTHubModuleClient.SetMethodHandlerAsync(
+                        "serialWrite",
+                        SerialWriteMethodCallBack,
+                        ioTHubModuleClient);
+                }
             }
             catch (AggregateException ex)
             {
@@ -227,7 +231,7 @@ namespace iotedgeSerial
             {
                 var serializedStr = JsonConvert.SerializeObject(desiredProperties);
 
-                Log.Verbose($"Desired property change: {serializedStr}");
+                Log.Verbose($"Incoming desired properties change: '{serializedStr}'");
 
                 ModuleConfig moduleConfig = JsonConvert.DeserializeObject<ModuleConfig>(serializedStr);
 
@@ -265,12 +269,12 @@ namespace iotedgeSerial
             {
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Log.Error($"Error when receiving desired property: {0}", exception);
+                    Log.Error($"Error when receiving desired property: '{exception.Message}'");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"Error when receiving desired property: {0}", ex.Message);
+                Log.Error($"Exception when receiving desired property: '{ex.Message}'");
             }
         }
 
