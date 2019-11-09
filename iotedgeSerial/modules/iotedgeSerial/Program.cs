@@ -99,10 +99,19 @@ namespace iotedgeSerial
 
             var ioTHubModuleClient = userContext as ModuleClient;
 
+            if (desiredProperties == null)
+            {
+                Log.Debug("Empty desired properties ignored.");
+
+                return;
+            }
+
             try
             {
                 try
                 {
+                    Log.Debug("Detaching handlers...");
+
                     // stop all activities while updating configuration
                     await ioTHubModuleClient.SetInputMessageHandlerAsync(
                         "serialInput",
@@ -114,23 +123,25 @@ namespace iotedgeSerial
                         DummyMethodCallBack,
                         null);
 
-                    Log.Debug("Dummies attached");
+                    Log.Debug("Detached handlers...");
 
                     _run = false;
                     await Task.WhenAll(_taskList); // wait until all tasks are completed
 
-                    Log.Debug("Waited for all tasks to complete");
+                    Log.Debug("Waited for all tasks to complete...");
 
                     _taskList.Clear();
                     _run = true;
 
-                    Log.Debug("List cleared");
+                    Log.Debug("Task list cleared");
 
                     // start new activities with new set of desired properties
                     await SetupNewTasks(desiredProperties, ioTHubModuleClient);
                 }
                 finally
                 {
+                    Log.Debug("Attaching handlers...");
+
                     // assign input message handler again
                     await ioTHubModuleClient.SetInputMessageHandlerAsync(
                         "serialInput",
@@ -142,6 +153,8 @@ namespace iotedgeSerial
                         "serialWrite",
                         SerialWriteMethodCallBack,
                         ioTHubModuleClient);
+
+                    Log.Debug("Attached handlers");
                 }
             }
             catch (AggregateException ex)
@@ -583,7 +596,7 @@ namespace iotedgeSerial
             Log.Information("     \\__ \\/ -_)| '_|| |/ _` || | | |\\/| |/ _ \\/ _` || || || |/ -_)");
             Log.Information("     |___/\\___||_|  |_|\\__,_||_| |_|  |_|\\___/\\__,_| \\_,_||_|\\___|");
             Log.Information(" ");
-            Log.Information("   Copyright © 2019 - Jan Willem Groenenberg & Sander van de Velde.");
+            Log.Information("   Copyright © 2019 - IoT Edge Foundation");
             Log.Information(" ");
         }
     }
