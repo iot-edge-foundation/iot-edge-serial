@@ -64,11 +64,8 @@ namespace iotedgeSerial
                     Console.WriteLine($"Invalid baudRate for {key}. Set to default {DefaultBaudRate}");
                 }
 
-                if (string.IsNullOrEmpty(portConfig.Parity))
+                if (!string.IsNullOrEmpty(portConfig.Parity))
                 {
-                    portConfig.Parity = DefaultParity;
-                    Console.WriteLine($"Missing parity for {key}. Set to default {DefaultParity}");
-
                     switch (portConfig.Parity)
                     {
                         case "None":
@@ -86,8 +83,16 @@ namespace iotedgeSerial
                         case "Space":
                             portConfig.ParityEnum = Parity.Space;
                             break;
+                        default:
+                            portConfig.Parity = DefaultParity;
+                            Console.WriteLine($"Invalid parity '{portConfig.Parity}' for '{key}'. Set to default {DefaultParity}");
+                            break;
                     };
-
+                }
+                else
+                {
+                    portConfig.Parity = DefaultParity;
+                    Console.WriteLine($"Missing parity for {key}. Set to default {DefaultParity}");
                 }
 
                 if (portConfig.DataBits < 1)
@@ -96,11 +101,8 @@ namespace iotedgeSerial
                     Console.WriteLine($"Invalid databits for {key}. Set to default {DefaultDataBits}");
                 }
 
-                if (string.IsNullOrEmpty(portConfig.StopBits))
+                if (!string.IsNullOrEmpty(portConfig.StopBits))
                 {
-                    portConfig.StopBits = DefaultStopBits;
-                    Console.WriteLine($"Missing stopBits for {key}. Set to default {DefaultStopBits}");
-
                     switch (portConfig.StopBits)
                     {
                         case "None":
@@ -115,7 +117,16 @@ namespace iotedgeSerial
                         case "Two":
                             portConfig.StopBitsEnum = StopBits.Two;
                             break;
+                        default:
+                            portConfig.StopBits = DefaultStopBits;
+                            Console.WriteLine($"Invalid stopbits '{portConfig.StopBits}' for '{key}'. Set to default {DefaultParity}");
+                            break;
                     };
+                }
+                else
+                {
+                    portConfig.StopBits = DefaultStopBits;
+                    Console.WriteLine($"Missing stopBits for {key}. Set to default {DefaultStopBits}");
                 }
 
                 if (string.IsNullOrEmpty(portConfig.Delimiter))

@@ -273,6 +273,9 @@ namespace iotedgeSerial
 
                 // report back received properties
                 string reportedPropertiesJson = JsonConvert.SerializeObject(moduleConfig);
+
+                Log.Verbose($"Reported properties: '{reportedPropertiesJson}'");
+
                 var reportedProperties = new TwinCollection(reportedPropertiesJson);
                 await client.UpdateReportedPropertiesAsync(reportedProperties);
 
@@ -302,7 +305,7 @@ namespace iotedgeSerial
             {
                 try
                 {
-                    Log.Debug($"Opening port '{portConfig.Device}' for '{portConfig.Direction}'");
+                    Log.Debug($"Opening port '{portConfig.Device}' ({portConfig.BaudRate}, {portConfig.DataBits}, StopBitsEnum: {portConfig.StopBitsEnum}, ParityEnum: {portConfig.ParityEnum}) for '{portConfig.Direction}'");
 
                     var serialPort = OpenSerial(portConfig.Device,
                                                 portConfig.BaudRate,
@@ -458,6 +461,8 @@ namespace iotedgeSerial
         /// </summary>
         private static byte[] ReadResponse(ISerialDevice serialPort, PortConfig portConfig)
         {
+//            Log.Verbose("Read next line...");            
+
             int bytesRead = 0;
 
             int delimiterIndex = 0;
@@ -509,8 +514,6 @@ namespace iotedgeSerial
                 Log.Debug("Shutdown reading");
                 temp.Clear();
             }
-
-            Log.Debug("Ready to show");
 
             return temp.ToArray();
         }
