@@ -5,14 +5,14 @@ namespace iotedgeSerial
 {
     using System.IO.Ports;
 
-    public class WinSerialDevice : ISerialDevice
+    public class SerialDevice : ISerialDevice
     {
         private SerialPort serialPort = null;
-        public static WinSerialDevice CreateDevice(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
+        public static SerialDevice CreateDevice(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
             List<string> serial_ports = new List<string>();
 
-            return new WinSerialDevice(portName, baudRate, parity, dataBits, stopBits);
+            return new SerialDevice(portName, baudRate, parity, dataBits, stopBits);
         }
 
         public void Open()
@@ -22,7 +22,7 @@ namespace iotedgeSerial
             this.serialPort.ReadTimeout = 5000;
         }
 
-        private WinSerialDevice(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
+        private SerialDevice(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
         {
             this.serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
         }

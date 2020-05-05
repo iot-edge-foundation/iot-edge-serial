@@ -2,9 +2,9 @@
     "$schema-version": "0.0.1",
     "description": "",
     "image": {
-        "repository": "iotedgefoundation/iot-edge-serial",
+        "repository": "svelde/iot-edge-serial-test",
         "tag": {
-            "version": "0.0.1",
+            "version": "0.0.11",
             "platforms": {
                 "amd64": "./docker/amd64.dockerfile", 
                 "amd64.debug": "./docker/amd64.debug.dockerfile",
