@@ -36,7 +36,7 @@ Visit http://azure.com/iotdev to learn more about developing applications for Az
 
 Azure IoT Edge is designed to be used with a broad range of operating system platforms. Serial module has been tested on the following platforms:
 
-- ~~Windows 10 IoT Enterprise (version 1809) x64~~
+- Windows 10 IoT Enterprise (version 1809) x64
 - ~~Windows 10 IoT Core (version 1809) x64~~
 - Linux x64
 - ~~Linux arm32v7~~
@@ -45,23 +45,23 @@ Azure IoT Edge is designed to be used with a broad range of operating system pla
 
 If you are new to developing Azure IoT Edge modules, check out these resources first:
 
+- [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux)
 - [Windows 10 Desktop](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
 - [Windows 10 IoT Core](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-core)
-- [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux)
 
-## Build Environment Setup
+## Build your own
 
-Serial module is a .NET Core 2.1 application, which is developed and built based on the guidelines in the Azure IoT Edge documentation. Please follow these links to setup a [Windows](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-windows) or [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux) build environment.
+In this section, the Serial module will be built as an IoT Edge module.
+
+### Environment Setup
+
+Serial module is a .NET Core 3.1 application, which is developed and built based on the guidelines in the Azure IoT Edge documentation. Please follow these links to setup a [Windows](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-windows) or [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/tutorial-develop-for-linux) build environment.
 
 Basic requirements:
 
-- Docker CE or Moby (Linux only)
-- .NET Core 2.1 SDK
-- Visual Studio Code
-
-## How to build
-
-In this section, the Serial module will be built as an IoT Edge module.
+- Docker CE on Windows (For building both Windows and Linux containers)
+- .NET Core 3.1 SDK
+- Visual Studio Code with IoT Edge and C# extensions
 
 ### Build your own module
 
