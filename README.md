@@ -109,8 +109,8 @@ Before running the module on an IoT Edge, proper configuration is required. Here
 
 Meaning of each field:
 - **portConfigs**: Array of port configurations, size 1 to n
-    - **&lt;named port&gt;**: Named port like 'ttyS0' and 'ttyS1' in the example above
-        - **device**: Device like /dev/tty... as string. (*Note:* Has to resemble the 'PathInContainer' create option)
+    - **&lt;named port&gt;**: Human readable name like 'ttyS0' and 'ttyS1' in the example above
+        - **device**: Device like /dev/tty... or COMx as string. (*Note:* Has to resemble the 'PathInContainer' create option)
         - **direction**: To read from or write to the devicePossible values: Read or Write.
         - **sleepInterval**: # of milliseconds the thread should sleep as integer
         - **baudRate**: # of bauds as integer
@@ -218,7 +218,7 @@ Please follow [the link](https://docs.microsoft.com/en-us/azure/iot-edge/tutoria
 
 #### Configure create options
 
-In the Container "createOptions" section, enter the following for device mapping.
+In the Container "createOptions" section, enter the following for device mapping in Linux:
 
 ```javascript
 {
@@ -243,17 +243,36 @@ Replace ```<device name on host machine>``` with the actual serial device like '
 The 'PathInContainer' create option has to resemble the desired property 'device'.
 Define as much devices as you need.
 
+In Windows, use these (generic) Container Create options:
+
+```
+{
+  "HostConfig": {
+    "Isolation": "Process",
+    "Devices": [
+      {
+        "PathOnHost": "class/86E0D1E0-8089-11D0-9CE4-08003E301F73",
+        "PathInContainer": "",
+        "CgroupPermissions": ""
+      }
+    ]
+  }
+}
+```
+
+This gives the docker container access to all serial ports on the host Windows device.
+
 #### Environment variables
 
 For debugging purposes an environment variable is supported for more logging:
 
 ```
-RuntimeLogLevel = debug|info
+RuntimeLogLevel = verbose|debug|info
 ````
 
 #### Access for read/write on serial ports
 
-Elevated rights are needed for access to serial ports. If your serial port is named eg. '/dev/ttyS0' use:
+In Linux, Elevated rights are needed for access to serial ports. If your serial port is named eg. '/dev/ttyS0' use:
 
 ```bash
 # chmod 666 /dev/ttyS0
@@ -285,6 +304,7 @@ The following Azure IoT Edge devices are used to test the module:
 
 - Advantech Uno 2271G
 - Advantech Uno 2372G
+- Advantech Uno 1483G
 - Advantech Uno 1372G
 
 The following serial devices are used to test the module:
@@ -301,7 +321,7 @@ The following serial devices are used to test the module:
 
 Due to the fact the module is still being developed and tested, there are certain limitations to the module.
 
-- only available in Linux environments, please use Linux host + Linux container to play with the module.
+- Use Windows containers on Windows, use Linux containers on Linux.
 - Data transferred is handled as UTF-8 strings currently.
 - A &lt;named port&gt; is considered as being uni-directional. For bi-directional communication in Linux two &lt;named port&gt;s are offered for two serial connections to a single tty device.
 - Bluetooth devices with serial port support will work. But Bluetooth serial ports are not persisted so both reuse of the same portname and reuse of elevated rights not not garanteed.
