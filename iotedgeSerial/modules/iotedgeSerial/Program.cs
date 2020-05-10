@@ -305,7 +305,7 @@ namespace iotedgeSerial
             {
                 try
                 {
-                    Log.Debug($"Opening port '{portConfig.Device}' ({portConfig.BaudRate}, {portConfig.DataBits}, StopBitsEnum: {portConfig.StopBitsEnum}, ParityEnum: {portConfig.ParityEnum}) for '{portConfig.Direction}'");
+                    Log.Information($"Opening port '{portConfig.Device}' ({portConfig.BaudRate}, {portConfig.DataBits}, StopBitsEnum: {portConfig.StopBitsEnum}, ParityEnum: {portConfig.ParityEnum}) for '{portConfig.Direction}'");
 
                     var serialPort = OpenSerial(portConfig.Device,
                                                 portConfig.BaudRate,
