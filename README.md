@@ -39,7 +39,7 @@ Azure IoT Edge is designed to be used with a broad range of operating system pla
 - Windows 10 IoT Enterprise (version 1809) x64
 - ~~Windows 10 IoT Core (version 1809) x64~~
 - Linux x64
-- ~~Linux arm32v7~~
+- Linux arm32v7
 
 ### Device Setup
 
@@ -83,13 +83,15 @@ Before running the module on an IoT Edge, proper configuration is required. Here
       "ttyS0": {
         "device": "/dev/ttyS0",
         "direction": "Read",
-        "sleepInterval": 1,
+        "sleepInterval": 10,
         "baudRate": 115200,
         "parity": "None",
         "dataBits": 8,
         "stopBits": "One",
-        "delimiter": "\n",
-        "ignoreEmptyLines": true
+        "delimiter": "/",
+        "ignoreEmptyLines": true,
+        "delimiterAtStart": true,
+        "delimiterInOutput": true
       },
       "ttyS1": {
         "device": "/dev/ttyS1",
@@ -100,7 +102,9 @@ Before running the module on an IoT Edge, proper configuration is required. Here
         "dataBits": 8,
         "stopBits": "One",
         "delimiter": "\r\n",
-        "ignoreEmptyLines": false
+        "ignoreEmptyLines": false,
+        "delimiterAtStart": false,
+        "delimiterInOutput": false
       }
     }
   }
@@ -119,10 +123,14 @@ Meaning of each field:
         - **stopBits**: Stop bits with possible values: as string
         - **delimiter**: Delimiter to separate data into messages as string
         - **ignoreEmptyLines**: Ignore empty lines in input data as boolean
+        - **delimiterAtStart**: Location of the delimiter is at the start of the data as boolean
+        - **delimiterInOutput**: Include delimiter in upstream data as boolean
 
 Naming convention for &lt;named port&gt; is to use the device name as used in the operating system, like 'ttyS0' on Linux or 'COM1' on Windows for the first serial port.
 
 Input data length is limited to 1024 bytes. This is to prevent timeouts due to not recognized delimiters in the input stream. After 1024 bytes a warning message is logged. This exception is treated as an empty line.
+
+__*Note: The ```delimiterAtStart``` and ```delimiterInOutput``` are added to support messages where the delimiter is part of the data which has a CRC checksum (like a P1 telegram as defined in the DSMR P1 5.0 standard). The two properties only influence serial read ```direction```.*__
 
 For more about the RS232 standard, please refer to the [Wiki](https://en.wikipedia.org/wiki/RS-232) link.
 
@@ -328,7 +336,9 @@ Due to the fact the module is still being developed and tested, there are certai
 
 ## Acknowledgement
 
-The serial reader/writer is based on the [Microsoft Modbus module](https://github.com/Azure/iot-edge-modbus).
+The serial reader/writer was (serial module version >= 0.1.0) originally based on the [Microsoft Modbus module](https://github.com/Azure/iot-edge-modbus). 
+
+Since .Net Core 3.1 supports cross platform serial ports natively, the C code dependency has been removed.
 
 The routing images are produced with the [IoT Edge Module Flow generator](https://iotedgemoduleflow.azurewebsites.net/).
 
