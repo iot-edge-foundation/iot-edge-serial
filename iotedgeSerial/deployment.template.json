@@ -71,6 +71,11 @@
                       "PathOnHost": "/dev/ttyS0",
                       "PathInContainer": "/dev/ttyS0",
                       "CgroupPermissions": "rwm"
+                    },
+                    {
+                      "PathOnHost": "/dev/ttyS1",
+                      "PathInContainer": "/dev/ttyS1",
+                      "CgroupPermissions": "rwm"
                     }
                   ]
                 }
@@ -88,18 +93,37 @@
         },
         "storeAndForwardConfiguration": {
           "timeToLiveSecs": 7200
-        },
-        "iotedgeSerial": {
-          "properties.desired": {
-            "schemaVersion": "1.0",
+        }
+      }
+    },
+    "iotedgeSerial": {
+      "properties.desired": {
+        "portConfigs": {
+          "ttyS0": {
             "device": "/dev/ttyS0",
+            "direction": "Read",
             "sleepInterval": 10,
             "baudRate": 9600,
+            "parity": "One",
+            "dataBits": 8,
+            "stopBits": "One",
+            "delimiter": "\r\n",
+            "ignoreEmptyLines": true,
+            "delimiterAtStart": false,
+            "delimiterInOutput": false
+          },
+          "ttyS1": {
+            "device": "/dev/ttyS1",
+            "direction": "Write",
+            "sleepInterval": 10,
+            "baudRate": 115200,
             "parity": "None",
             "dataBits": 8,
             "stopBits": "One",
-            "beginDelimiter": "\r",
-            "endDelimiter": "\n"
+            "delimiter": "/",
+            "ignoreEmptyLines": true,
+            "delimiterAtStart": true,
+            "delimiterInOutput": true
           }
         }
       }

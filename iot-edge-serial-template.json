@@ -1,17 +1,17 @@
 {
-    "portConfigs": {
-        "ttyUSB0": {
-          "device": "/dev/ttyUSB0",
-          "direction": "Read",
-          "sleepInterval": 10,
-          "baudRate": 115200,
-          "parity": "None",
-          "dataBits": 8,
-          "stopBits": "One",
-          "delimiter": "/",
-          "ignoreEmptyLines": true,
-          "delimiterAtStart": false,
-          "delimiterInOutput": false
-        }
+  "portConfigs": {
+    "ttyUSB0": {
+      "device": "/dev/ttyUSB0",
+      "direction": "Read",
+      "sleepInterval": 10,
+      "baudRate": 115200,
+      "parity": "None",
+      "dataBits": 8,
+      "stopBits": "One",
+      "delimiter": "/",
+      "ignoreEmptyLines": true,
+      "delimiterAtStart": false,
+      "delimiterInOutput": false
     }
+  }
 }
