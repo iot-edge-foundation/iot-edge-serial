@@ -372,6 +372,18 @@ namespace iotedgeSerial
 
                     var data = Encoding.UTF8.GetString(response);
 
+                    if(portConfig.DelimiterInOutput)
+                    {
+                        if(portConfig.DelimiterAtStart)
+                        {
+                            data = portConfig.Delimiter + data;
+                        }
+                        else 
+                        {    
+                            data = data + portConfig.Delimiter;
+                        }
+                    }
+
                     Log.Debug($"Data read from '{portConfig.Device}': '{data}'");
 
                     var serialMessage = new SerialMessage

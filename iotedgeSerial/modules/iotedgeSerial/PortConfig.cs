@@ -36,5 +36,11 @@ namespace iotedgeSerial
 
         [JsonProperty("ignoreEmptyLines")]
         public bool IgnoreEmptyLines { get; set; }
+
+        [JsonProperty("delimiterAtStart")]
+        public bool DelimiterAtStart { get; set; }
+
+        [JsonProperty("delimiterInOutput")]
+        public bool DelimiterInOutput { get; set; }
     }
 }
