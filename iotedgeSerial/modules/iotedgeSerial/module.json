@@ -4,7 +4,7 @@
     "image": {
         "repository": "iotedgefoundation/iot-edge-serial",
         "tag": {
-            "version": "0.1.1",
+            "version": "0.1.3",
             "platforms": {
                 "amd64": "./docker/amd64.dockerfile", 
                 "amd64.debug": "./docker/amd64.debug.dockerfile",
@@ -18,3 +18,4 @@
     },
     "language": "csharp"
 }
+
