@@ -46,7 +46,7 @@ Azure IoT Edge is designed to be used with a broad range of operating system pla
 If you are new to developing Azure IoT Edge modules, check out these resources first:
 
 - [Linux](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart-linux)
-- [Windows 10 Desktop](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
+- [Windows 10 IoT Enterprise](https://docs.microsoft.com/en-us/azure/iot-edge/quickstart)
 - [Windows 10 IoT Core](https://docs.microsoft.com/en-us/azure/iot-edge/how-to-install-iot-core)
 
 ## Build your own
@@ -160,7 +160,7 @@ Message Properties:
 
 Latest Message Payload:
 
-```javascript
+```json
 {
     "port":"ttyS0",
     "data":"<data>",
@@ -199,7 +199,7 @@ Both solutions support writing back a single data message to a single serial por
 
 The content of the message must follow this message format:
 
-```javascript
+```json
 {
     "port" : "ttyS0",
     "data":"<your data to write to serial>"
@@ -228,7 +228,7 @@ Please follow [the link](https://docs.microsoft.com/en-us/azure/iot-edge/tutoria
 
 In the Container "createOptions" section, enter the following for device mapping in Linux:
 
-```javascript
+```json
 {
   "HostConfig": {
     "Devices": [
@@ -253,7 +253,7 @@ Define as much devices as you need.
 
 In Windows, use these (generic) Container Create options:
 
-```
+```json
 {
   "HostConfig": {
     "Isolation": "Process",
@@ -274,7 +274,7 @@ This gives the docker container access to all serial ports on the host Windows d
 
 For debugging purposes an environment variable is supported for more logging:
 
-```
+```csharp
 RuntimeLogLevel = verbose|debug|info
 ````
 
@@ -299,7 +299,7 @@ exit 0
 After saving this file, perform:
 
 ```bash
-# chmod 777 /etc/rc.local
+sudo chmod 777 /etc/rc.local
 ```
 
 Please reboot your machine so these changes can be applied.
@@ -310,10 +310,12 @@ We test our module on actual hardware.
 
 The following Azure IoT Edge devices are used to test the module: 
 
-- Advantech Uno 2271G
-- Advantech Uno 2372G
-- Advantech Uno 1483G
-- Advantech Uno 1372G
+- Advantech Uno 2271G (Ubuntu 18.04 & 20.04)
+- Advantech Uno 2372G (ubuntu 18.04)
+- Advantech Uno 2484G (Ubuntu 18.04 & Windows 10 IoT)
+- Advantech Uno 1483G (Ubuntu 18.04)
+- Advantech Uno 1372G (Ubuntu 18.04 & 20.04)
+- Raspberry Pi 2B (Raspbian Stretch & Buster)
 
 The following serial devices are used to test the module:
 
@@ -322,6 +324,7 @@ The following serial devices are used to test the module:
 - BEITIAN USB GNSS GPS Receiver BN-85U (U-Blox UBX-M8030)
 - Webio GRB-288 Bluetooth GPS mouse
 - GSpace GS-R238 GPS mouse (SiRFstarIII)
+- DSMR P1 to USB cable for Dutch smart meters
 
 *Note*: If you want to have your serial device tested, listed and officially supported here, please send us a DM on github
 
