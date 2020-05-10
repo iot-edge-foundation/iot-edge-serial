@@ -32,3 +32,4 @@ artifacts/
 *.svclog
 *.scc
 
+iotedgeSerial/deployment.test.template.json
