@@ -33,3 +33,4 @@ artifacts/
 *.scc
 
 iotedgeSerial/deployment.test.template.json
+iotedgeSerial/.vscode/launch.json
