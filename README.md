@@ -1,6 +1,6 @@
 # Azure IoT Edge Serial Module
 
-*This project has adopted the [Code of Conduct](CODE_OF_CONDUCT.md) from Contributor Covenant (https://www.contributor-covenant.org/) For more information contact ```jw + @ + jeeweetje.net``` and ```sander + @ + vandevelde-online.com``` with any additional questions or comments.*
+*This project has adopted the [Code of Conduct](CODE_OF_CONDUCT.md) from Contributor Covenant [https://www.contributor-covenant.org/](https://www.contributor-covenant.org/) For more information contact ```jw + @ + jeeweetje.net``` and ```sander + @ + vandevelde-online.com``` with any additional questions or comments.*
 
 ```ascii
    _                         ___      _____   ___     _
@@ -28,7 +28,7 @@ The current version of the module is targeted for the latest [Azure IoT Edge GA]
 
 Find more information about Azure IoT Edge at [here](https://docs.microsoft.com/en-us/azure/iot-edge/how-iot-edge-works).
 
-Visit http://azure.com/iotdev to learn more about developing applications for Azure IoT.
+Visit [http://azure.com/iotdev](http://azure.com/iotdev) to learn more about developing applications for Azure IoT.
 
 ## Target Device Setup
 
@@ -112,19 +112,20 @@ Before running the module on an IoT Edge, proper configuration is required. Here
 ```
 
 Meaning of each field:
+
 - **portConfigs**: Array of port configurations, size 1 to n
-    - **&lt;named port&gt;**: Human readable name like 'ttyS0' and 'ttyS1' in the example above
-        - **device**: Device like /dev/tty... or COMx as string. (*Note:* Has to resemble the 'PathInContainer' create option)
-        - **direction**: To read from or write to the devicePossible values: Read or Write.
-        - **sleepInterval**: # of milliseconds the thread should sleep as integer
-        - **baudRate**: # of bauds as integer
-        - **parity**: Parity; with possible values: None, One, as string
-        - **dataBits**: # number of data bits as integer
-        - **stopBits**: Stop bits with possible values: as string
-        - **delimiter**: Delimiter to separate data into messages as string
-        - **ignoreEmptyLines**: Ignore empty lines in input data as boolean
-        - **delimiterAtStart**: Location of the delimiter is at the start of the data as boolean
-        - **delimiterInOutput**: Include delimiter in upstream data as boolean
+  - **&lt;named port&gt;**: Human readable name like 'ttyS0' and 'ttyS1' in the example above
+    - **device**: Device like /dev/tty... or COMx as string. (*Note:* Has to resemble the 'PathInContainer' create option)
+    - **direction**: To read from or write to the devicePossible values: Read or Write.
+    - **sleepInterval**: # of milliseconds the thread should sleep as integer
+    - **baudRate**: # of bauds as integer
+    - **parity**: Parity; with possible values: None, One, as string
+    - **dataBits**: # number of data bits as integer
+    - **stopBits**: Stop bits with possible values: as string
+    - **delimiter**: Delimiter to separate data into messages as string
+    - **ignoreEmptyLines**: Ignore empty lines in input data as boolean
+    - **delimiterAtStart**: Location of the delimiter is at the start of the data as boolean
+    - **delimiterInOutput**: Include delimiter in upstream data as boolean
 
 Naming convention for &lt;named port&gt; is to use the device name as used in the operating system, like 'ttyS0' on Linux or 'COM1' on Windows for the first serial port.
 
@@ -286,7 +287,7 @@ In Linux, Elevated rights are needed for access to serial ports. If your serial 
 # chmod 666 /dev/ttyS0
 ``````
 
-__* Note: This setting must survive a reboot of the host machine!*__
+__*Note: This setting must survive a reboot of the host machine!*__
 
 Using Ubuntu, one way to persist elevated rights is using a file named /etc/rc.local with this content:
 
@@ -306,9 +307,9 @@ Please reboot your machine so these changes can be applied.
 
 ## Supported hardware
 
-We test our module on actual hardware. 
+We test our module on actual hardware.
 
-The following Azure IoT Edge devices are used to test the module: 
+The following Azure IoT Edge devices are used to test the module:
 
 - Advantech Uno 2271G (Ubuntu 18.04 & 20.04)
 - Advantech Uno 2372G (ubuntu 18.04)
@@ -339,7 +340,7 @@ Due to the fact the module is still being developed and tested, there are certai
 
 ## Acknowledgement
 
-The serial reader/writer was (serial module version >= 0.1.0) originally based on the [Microsoft Modbus module](https://github.com/Azure/iot-edge-modbus). 
+The serial reader/writer was (serial module version >= 0.1.0) originally based on the [Microsoft Modbus module](https://github.com/Azure/iot-edge-modbus).
 
 Since .Net Core 3.1 supports cross platform serial ports natively, the C code dependency has been removed.
 
