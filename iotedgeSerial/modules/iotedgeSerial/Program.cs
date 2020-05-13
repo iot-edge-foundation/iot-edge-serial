@@ -168,7 +168,7 @@ namespace iotedgeSerial
             }
             catch (Exception ex)
             {
-                Log.Error($"Error when receiving desired property: {ex.Message}");
+                Log.Error($"Error when receiving desired property: {ex.Message}"); 
             }
         }
 
@@ -314,12 +314,17 @@ namespace iotedgeSerial
                                                 portConfig.StopBitsEnum,
                                                 portConfig.Direction);
 
+                    if (serialPort == null)
+                    {
+                        Log.Debug("For some reason, serial port creation failed.");
+                    }
+
                     return serialPort;
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Exception: {ex.ToString()}");
-                    Log.Debug($"Inner Exception: {ex.InnerException.ToString()}");
+                    Log.Error($"{ex.Message}");
+                    Log.Debug($"Inner Exception InitSerialPort: {ex.InnerException.ToString()}");
                 }
             }
 
@@ -352,6 +357,12 @@ namespace iotedgeSerial
             // create serial port
             var serialPort = InitSerialPort(portConfig);
 
+            if (serialPort == null)
+            {
+                Log.Debug($"Task for {port} aborted.");
+                return;
+            }
+
             Log.Debug($"Port '{port}' created");
 
             if (portConfig.Direction == "Read")
@@ -359,7 +370,7 @@ namespace iotedgeSerial
                 Log.Debug($"Start read loop");
 
                 // Looping infinitely until desired properties are updated.
-                while (_run)
+                while (serialPort != null && _run)
                 {
                     var response = ReadResponse(serialPort, portConfig);
 
@@ -437,23 +448,28 @@ namespace iotedgeSerial
 
                         Log.Debug($"BroadcastEvent message converted");
 
-                        if (totalBytes.Length > 0)
+                        if (serialPort != null && totalBytes.Length > 0)
                         {
                             serialPort.Write(totalBytes, 0, totalBytes.Length);
                             Log.Information($"Written to '{se.Port}': '{ShowControlCharacters(Encoding.UTF8.GetString(totalBytes))}'");
+                        }
+                        else
+                        {
+                            Log.Information($"Value not written to '{se.Port}', no port available or empty message");
                         }
 
                         Log.Debug($"BroadcastEvent message handled");
                     }
                 };
 
-                while (_run)
+                while (serialPort != null && _run)
                 {
                     await Task.Delay(portConfig.SleepInterval);
                 };
             }
-        }
 
+            Log.Debug($"Task for {port} ended.");
+        }
 
         /// <summary>
         /// Open the initialized serial port
@@ -484,7 +500,7 @@ namespace iotedgeSerial
             var buf = new byte[1];
 
             //read until end delimiter is reached eg. \r\n in 12345\r\n67890
-            while (_run && bytesRead < 1024)
+            while (serialPort != null && _run && bytesRead < 1024)
             {
                 var i = serialPort.Read(buf, 0, 1);
 
@@ -524,6 +540,12 @@ namespace iotedgeSerial
             if (!_run)
             {
                 Log.Debug("Shutdown reading");
+                temp.Clear();
+            }
+
+            if (serialPort == null)
+            {
+                Log.Debug("No port available anymore");
                 temp.Clear();
             }
 
