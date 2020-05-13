@@ -168,7 +168,8 @@ namespace iotedgeSerial
             }
             catch (Exception ex)
             {
-                Log.Error($"Error when receiving desired property: {ex}"); //.Message 
+                Log.Error($"Error when receiving desired property: {ex.Message}");  
+                Log.Debug($"Exception when receiving desired property: {ex}");  
             }
         }
 
