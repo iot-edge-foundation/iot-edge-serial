@@ -163,12 +163,12 @@ namespace iotedgeSerial
                 
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Log.Error($"Error when receiving desired property: {exception}");
+                    Log.Error($"Error when receiving desired property: {exception.Message}");
                 }
             }
             catch (Exception ex)
             {
-                Log.Error($"Error when receiving desired property: {ex.Message}"); 
+                Log.Error($"Error when receiving desired property: {ex}"); //.Message 
             }
         }
 
@@ -283,9 +283,11 @@ namespace iotedgeSerial
             }
             catch (AggregateException ex)
             {
+                Log.Error($"Error when receiving desired property: '{ex.Message}'");
+
                 foreach (Exception exception in ex.InnerExceptions)
                 {
-                    Log.Error($"Error when receiving desired property: '{exception.Message}'");
+                    Log.Debug($"Inner exception when receiving desired property: '{exception}'");
                 }
             }
             catch (Exception ex)
@@ -324,7 +326,8 @@ namespace iotedgeSerial
                 catch (Exception ex)
                 {
                     Log.Error($"{ex.Message}");
-                    Log.Debug($"Inner Exception InitSerialPort: {ex.InnerException.ToString()}");
+
+                    Log.Debug($"Inner Exception InitSerialPort: {ex.InnerException?.ToString()}");
                 }
             }
 
@@ -352,123 +355,135 @@ namespace iotedgeSerial
         /// </summary>
         private static async Task SerialTaskBody(string port, PortConfig portConfig, ModuleClient client, SerialMessageBroadcaster serialMessageBroadcaster)
         {
-            Log.Debug($"Creating port");
-
-            // create serial port
-            var serialPort = InitSerialPort(portConfig);
-
-            if (serialPort == null)
+            try
             {
-                Log.Debug($"Task for {port} aborted.");
-                return;
-            }
+                Log.Debug($"Creating port");
 
-            Log.Debug($"Port '{port}' created");
+                // create serial port
+                var serialPort = InitSerialPort(portConfig);
 
-            if (portConfig.Direction == "Read")
-            {
-                Log.Debug($"Start read loop");
-
-                // Looping infinitely until desired properties are updated.
-                while (serialPort != null && _run)
+                if (serialPort == null)
                 {
-                    var response = ReadResponse(serialPort, portConfig);
-
-                    if (portConfig.IgnoreEmptyLines
-                                    && response.Length == 0)
-                    {
-                        Log.Debug($"Ignore empty line");
-                        continue;
-                    }
-
-                    var data = Encoding.UTF8.GetString(response);
-
-                    if(portConfig.DelimiterInOutput)
-                    {
-                        if(portConfig.DelimiterAtStart)
-                        {
-                            data = portConfig.Delimiter + data;
-                        }
-                        else 
-                        {    
-                            data = data + portConfig.Delimiter;
-                        }
-                    }
-
-                    Log.Debug($"Data read from '{portConfig.Device}': '{data}'");
-
-                    var serialMessage = new SerialMessage
-                    {
-                        Data = data,
-                        Port = port,
-                        TimestampUtc = DateTime.UtcNow,
-                    };
-
-                    var jsonMessage = JsonConvert.SerializeObject(serialMessage);
-
-                    Log.Debug($"Message out: '{jsonMessage}'");
-
-                    var byteMessage = Encoding.UTF8.GetBytes(jsonMessage);
-                    
-                    using (var pipeMessage = new Message(byteMessage))
-                    {
-                        pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
-
-                        await client.SendEventAsync(port, pipeMessage);
-                    }
-                    
-                    Log.Debug($"Message sent to output: {port}");
-
-                    // wait a certain interval
-                    await Task.Delay(portConfig.SleepInterval);
+                    Log.Debug($"Task for {port} aborted.");
+                    return;
                 }
 
-                Log.Debug($"Disposing port '{port}'");
+                Log.Debug($"Port '{port}' created");
 
-                // Ingest stopped. Tear down port
-                DisposeSerialPort(serialPort);
-
-                Log.Debug($"Disposed port '{port}'");
-            }
-            else if(portConfig.Direction == "Write")
-            {
-                Log.Debug("Let's write to serial");
-
-                serialMessageBroadcaster.BroadcastEvent += (sender, se) =>
-                { 
-                    Log.Debug($"Executing BroadcastEvent for port '{se.Port}'");
-
-                    if (se.Port == port)
-                    {
-                        Log.Debug($"BroadcastEvent has been picked up");
-
-                        byte[] valueBytes = se.Message;
-                        byte[] delimiterBytes = Encoding.UTF8.GetBytes(portConfig.Delimiter);
-                        byte[] totalBytes = valueBytes.Concat(delimiterBytes).ToArray();
-
-                        Log.Debug($"BroadcastEvent message converted");
-
-                        if (serialPort != null && totalBytes.Length > 0)
-                        {
-                            serialPort.Write(totalBytes, 0, totalBytes.Length);
-                            Log.Information($"Written to '{se.Port}': '{ShowControlCharacters(Encoding.UTF8.GetString(totalBytes))}'");
-                        }
-                        else
-                        {
-                            Log.Information($"Value not written to '{se.Port}', no port available or empty message");
-                        }
-
-                        Log.Debug($"BroadcastEvent message handled");
-                    }
-                };
-
-                while (serialPort != null && _run)
+                if (portConfig.Direction == "Read")
                 {
-                    await Task.Delay(portConfig.SleepInterval);
-                };
-            }
+                    Log.Debug($"Start read loop");
 
-            Log.Debug($"Task for {port} ended.");
+                    // Looping infinitely until desired properties are updated.
+                    while (serialPort != null && _run)
+                    {
+                        var response = ReadResponse(serialPort, portConfig);
+
+                        if (portConfig.IgnoreEmptyLines
+                                        && response.Length == 0)
+                        {
+                            Log.Debug($"Ignore empty line");
+                            continue;
+                        }
+
+                        var data = Encoding.UTF8.GetString(response);
+
+                        if(portConfig.DelimiterInOutput)
+                        {
+                            if(portConfig.DelimiterAtStart)
+                            {
+                                data = portConfig.Delimiter + data;
+                            }
+                            else 
+                            {    
+                                data = data + portConfig.Delimiter;
+                            }
+                        }
+
+                        Log.Debug($"Data read from '{portConfig.Device}': '{data}'");
+
+                        var serialMessage = new SerialMessage
+                        {
+                            Data = data,
+                            Port = port,
+                            TimestampUtc = DateTime.UtcNow,
+                        };
+
+                        var jsonMessage = JsonConvert.SerializeObject(serialMessage);
+
+                        Log.Debug($"Message out: '{jsonMessage}'");
+
+                        var byteMessage = Encoding.UTF8.GetBytes(jsonMessage);
+                        
+                        using (var pipeMessage = new Message(byteMessage))
+                        {
+                            pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
+
+                            await client.SendEventAsync(port, pipeMessage);
+                        }
+                        
+                        Log.Debug($"Message sent to output: {port}");
+
+                        // wait a certain interval
+                        await Task.Delay(portConfig.SleepInterval);
+                    }
+
+                    Log.Debug($"Disposing port '{port}'");
+
+                    // Ingest stopped. Tear down port
+                    DisposeSerialPort(serialPort);
+
+                    Log.Debug($"Disposed port '{port}'");
+                }
+                else if(portConfig.Direction == "Write")
+                {
+                    Log.Debug("Let's write to serial");
+
+                    serialMessageBroadcaster.BroadcastEvent += (sender, se) =>
+                    { 
+                        Log.Debug($"Executing BroadcastEvent for port '{se.Port}'");
+
+                        if (se.Port == port)
+                        {
+                            Log.Debug($"BroadcastEvent has been picked up");
+
+                            byte[] valueBytes = se.Message;
+                            byte[] delimiterBytes = Encoding.UTF8.GetBytes(portConfig.Delimiter);
+                            byte[] totalBytes = valueBytes.Concat(delimiterBytes).ToArray();
+
+                            Log.Debug($"BroadcastEvent message converted");
+
+                            if (serialPort != null && totalBytes.Length > 0)
+                            {
+                                serialPort.Write(totalBytes, 0, totalBytes.Length);
+                                Log.Information($"Written to '{se.Port}': '{ShowControlCharacters(Encoding.UTF8.GetString(totalBytes))}'");
+                            }
+                            else
+                            {
+                                Log.Information($"Value not written to '{se.Port}', no port available or empty message");
+                            }
+
+                            Log.Debug($"BroadcastEvent message handled");
+                        }
+                    };
+
+                    while (serialPort != null && _run)
+                    {
+                        await Task.Delay(portConfig.SleepInterval);
+                    };
+                }
+
+                Log.Debug($"Task for {port} ended.");
+
+            }
+            catch (Exception ex)
+            {
+                // if one task fails, we just shut it down
+
+                Log.Error($"{ex.Message}");
+
+                Log.Debug($"Inner Exception SerialTaskBody: {ex.InnerException?.ToString()}");
+            }
         }
 
         /// <summary>
