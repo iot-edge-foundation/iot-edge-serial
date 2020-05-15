@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster-arm32v7 AS base
+FROM mcr.microsoft.com/dotnet/core/runtime:3.1-buster-slim-arm32v7 AS base
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends unzip procps && \
