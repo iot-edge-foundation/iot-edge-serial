@@ -12,7 +12,7 @@
                 "arm32v7.debug": "./docker/arm32v7.debug.dockerfile",
                 "windows-amd64": "./docker/windows-amd64.dockerfile",
                 "arm64v8": "./docker/arm64v8.dockerfile",
-                "arm64v8.debug": ".docker/arm64v8.debug.dockerfile"
+                "arm64v8.debug": "./docker/arm64v8.debug.dockerfile"
             }
         },
         "buildOptions": [],
