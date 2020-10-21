@@ -418,6 +418,9 @@ namespace iotedgeSerial
                         
                         using (var pipeMessage = new Message(byteMessage))
                         {
+                            pipeMessage.ContentType = "application/json";
+                            pipeMessage.ContentEncoding = "utf-8";
+                            
                             pipeMessage.Properties.Add("content-type", "application/edge-serial-json");
 
                             await client.SendEventAsync(port, pipeMessage);
